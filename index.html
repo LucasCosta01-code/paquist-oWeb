@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tropa Paquistão - Oficial</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-container">
+        <div class="overlay"></div>
+        <div class="scanlines"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-white">TROPA</span> <span class="logo-green">PAQUISTÃO</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#inicio">INÍCIO</a></li>
+            <li><a href="#historia">HISTÓRIA</a></li>
+            <li><a href="#noticias">NOTÍCIAS</a></li>
+            <li><a href="#galeria">GALERIA</a></li>
+            <li><a href="#videos">VÍDEOS</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="btn-encomenda" id="openOrderModal"><i class="fas fa-box"></i> ENCOMENDA</button>
+            <button class="btn-alistar" id="openModal">ALISTAR</button>
+        </div>
+    </nav>
+
+    <main>
+        <section id="inicio" class="hero">
+            <div class="hero-content">
+                <p class="hero-subtitle">Respeito, Lealdade e Estratégia: A força verde que domina as ruas com união e disciplina.</p>
+                <h1 class="hero-title-main">FAMÍLIA</h1>
+                <h1 class="hero-title-sub">PAQUISTÃO</h1>
+                <div class="hero-buttons">
+                    <button class="btn-primary" onclick="document.getElementById('openModal').click()">QUERO ME ALISTAR</button>
+                    <button class="btn-secondary" onclick="document.getElementById('openOrderModal').click()">FAZER ENCOMENDA</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="historia" class="section historia">
+            <div class="section-container">
+                <h2 class="section-title">NOSSA <span class="text-green">HISTÓRIA</span></h2>
+                <div class="historia-content">
+                    <div class="historia-text">
+                        <p>A Tropa Paquistão nasceu da necessidade de união entre os mais fortes. Não somos apenas uma facção, somos uma família forjada no fogo das ruas e na lealdade absoluta.</p>
+                        <p>Comandamos o setor com inteligência e disciplina, garantindo que o verde seja sempre respeitado. Nossa trajetória é marcada por conquistas estratégicas e uma hierarquia inabalável.</p>
+                        <p>Cada membro é uma peça fundamental na engrenagem que domina a cidade. Aqui, a lealdade não é apenas uma palavra, é o nosso código de conduta.</p>
+                    </div>
+                    <div class="historia-stats">
+                        <div class="stat-item">
+                            <span class="stat-num">100%</span>
+                            <span class="stat-label">LEALDADE</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-num">+50</span>
+                            <span class="stat-label">MEMBROS</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-num">24/7</span>
+                            <span class="stat-label">ATIVIDADE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="noticias" class="section noticias">
+            <div class="section-container">
+                <h2 class="section-title">NOTÍCIAS DA <span class="text-green">FAC</span></h2>
+                <div class="news-feed" id="newsFeed">
+                    <!-- Dynamic news will be inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <section id="galeria" class="section galeria">
+            <div class="section-container">
+                <div class="section-header-flex">
+                    <h2 class="section-title">NOSSA <span class="text-green">GALERIA</span></h2>
+                    <button class="btn-primary btn-small" id="openGalleryPostModal">POSTAR NA GALERIA</button>
+                </div>
+                <div class="gallery-feed" id="galleryFeed">
+                    <!-- Dynamic posts will be inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <section id="videos" class="section videos">
+            <div class="section-container">
+                <div class="section-header-flex">
+                    <h2 class="section-title">VÍDEOS DA <span class="text-green">TROPA</span></h2>
+                    <button class="btn-primary btn-small" id="openVideoModal">ENVIAR VÍDEO</button>
+                </div>
+                <div class="video-grid">
+                    <!-- Dynamic videos will be inserted here -->
+                    <div class="video-card">
+                        <div class="video-thumb">
+                            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800" alt="Video 1">
+                            <div class="play-btn"><i class="fas fa-play"></i></div>
+                        </div>
+                        <div class="video-info">
+                            <h3>OPERAÇÃO VERDE NOITE</h3>
+                            <p>Destaques da última operação tática.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-cards">
+            <div class="card card-green">
+                <div class="card-header">
+                    <i class="fas fa-bullseye"></i>
+                    <h2>PERFIL RECRUTA</h2>
+                </div>
+                <div class="card-body">
+                    <h3>POSTURA</h3>
+                    <p>Saber se portar com seriedade e respect em qualquer situação do dia a dia.</p>
+                    <h3>LEALDADE</h3>
+                    <p>Colocar os interesses da organização acima de qualquer desejo individual.</p>
+                </div>
+            </div>
+
+            <div class="card card-red">
+                <div class="card-header">
+                    <i class="fas fa-ban"></i>
+                    <h2>PROIBIÇÕES</h2>
+                </div>
+                <div class="card-body">
+                    <h3>TOXICIDADE</h3>
+                    <p>Qualquer tipo de desrespeito ou ofensa gera banimento imediato sem aviso.</p>
+                    <h3>ANTI-RP</h3>
+                    <p>Proibido realizar ações que quebrem a imersão ou as regras do servidor.</p>
+                </div>
+            </div>
+
+            <div class="card card-blue">
+                <div class="card-header">
+                    <i class="fas fa-gem"></i>
+                    <h2>BENEFÍCIOS</h2>
+                </div>
+                <div class="card-body">
+                    <h3>ESTRUTURA</h3>
+                    <p>Acesso a toda logística de armamento e veículos necessária para operações.</p>
+                    <h3>EVOLUÇÃO</h3>
+                    <p>Plano de carreira baseado em mérito e tempo de serviço dedicado à tropa.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 TROPA DO PAQUISTÃO | CRIADO POR ANTIGRAVITY</p>
+        <p class="footer-tagline">A LEALDADE É O NOSSO MAIOR TESOURO.</p>
+    </footer>
+
+    <!-- Registration Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('registerModal')">&times;</span>
+            <h2>ALISTAMENTO - TROPA PAQUISTÃO</h2>
+            <form id="registrationForm">
+                <div class="input-group">
+                    <label for="nickname">NICKNAME (IG)</label>
+                    <input type="text" id="nickname" name="nickname" required placeholder="Seu nome no jogo">
+                </div>
+                <div class="input-group">
+                    <label for="discordId">ID DO DISCORD</label>
+                    <input type="text" id="discordId" name="discordId" required placeholder="Seu ID numérico ou User#0000">
+                </div>
+                <div class="input-group">
+                    <label for="age">IDADE</label>
+                    <input type="number" id="age" name="age" required placeholder="Sua idade real">
+                </div>
+                <div class="input-group">
+                    <label for="motivation">POR QUE QUER SE ALISTAR?</label>
+                    <textarea id="motivation" name="motivation" required placeholder="Fale um pouco sobre você e suas intenções"></textarea>
+                </div>
+                <button type="submit" class="btn-submit">ENVIAR ALISTAMENTO</button>
+            </form>
+            <div id="statusMessage"></div>
+        </div>
+    </div>
+
+    <!-- Encomenda Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('orderModal')">&times;</span>
+            <h2>FAZER ENCOMENDA</h2>
+            <form id="orderForm">
+                <div class="input-group">
+                    <label for="orderProduct">O QUE DESEJA ENCOMENDAR?</label>
+                    <input type="text" id="orderProduct" name="product" required placeholder="Ex: Armamento, Munição, Veículo">
+                </div>
+                <div class="input-group">
+                    <label for="orderQuantity">QUANTIDADE / DETALHES</label>
+                    <input type="text" id="orderQuantity" name="quantity" required placeholder="Ex: 5 unidades, Detalhes extras">
+                </div>
+                <div class="input-group">
+                    <label for="orderDiscord">SEU DISCORD PARA CONTATO</label>
+                    <input type="text" id="orderDiscord" name="discord" required placeholder="User#0000">
+                </div>
+                <button type="submit" class="btn-submit">ENVIAR PEDIDO</button>
+            </form>
+            <div id="orderStatusMessage"></div>
+        </div>
+    </div>
+
+    <!-- Video Modal -->
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('videoModal')">&times;</span>
+            <h2>ENVIAR VÍDEO</h2>
+            <form id="videoForm">
+                <div class="input-group">
+                    <label for="videoTitle">TÍTULO DO VÍDEO</label>
+                    <input type="text" id="videoTitle" name="title" required placeholder="Ex: Operação Tática">
+                </div>
+                <div class="input-group">
+                    <label for="videoLink">LINK DO VÍDEO (YouTube/TikTok)</label>
+                    <input type="url" id="videoLink" name="link" required placeholder="https://youtube.com/...">
+                </div>
+                <div class="input-group">
+                    <label for="videoDiscord">SEU DISCORD</label>
+                    <input type="text" id="videoDiscord" name="discord" required placeholder="User#0000">
+                </div>
+                <button type="submit" class="btn-submit">ENVIAR VÍDEO</button>
+            </form>
+            <div id="videoStatusMessage"></div>
+        </div>
+    </div>
+
+    <!-- Gallery Post Modal -->
+    <div id="galleryPostModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('galleryPostModal')">&times;</span>
+            <h2>POSTAR NA GALERIA</h2>
+            <form id="galleryPostForm">
+                <div class="input-group">
+                    <label for="galleryAuthor">SEU NOME / NICKNAME</label>
+                    <input type="text" id="galleryAuthor" name="author" required placeholder="Seu nome">
+                </div>
+                <div class="input-group">
+                    <label for="galleryType">TIPO DE POSTAGEM</label>
+                    <select id="galleryType" name="type" required>
+                        <option value="image">FOTO (Link)</option>
+                        <option value="video">VÍDEO (Link YouTube/TikTok)</option>
+                        <option value="text">TEXTO / AVISO</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="galleryContent">LINK OU MENSAGEM</label>
+                    <textarea id="galleryContent" name="content" required placeholder="Cole o link da imagem/vídeo ou escreva seu texto"></textarea>
+                </div>
+                <button type="submit" class="btn-submit">PUBLICAR AGORA</button>
+            </form>
+            <div id="galleryStatusMessage"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
