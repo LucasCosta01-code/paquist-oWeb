@@ -58,8 +58,15 @@ async function openProfile() {
         if (!data.registered) {
             document.getElementById('profileName').textContent = data.discord.username;
             document.getElementById('profileAvatar').src = `https://cdn.discordapp.com/avatars/${data.discord.id}/${data.discord.avatar}.png`;
-            document.getElementById('profileRole').textContent = "Membro não registrado no Bot";
-            document.getElementById('profileGrid').innerHTML = "<p>Você precisa estar registrado no bot do Discord para ver suas metas aqui.</p>";
+            document.getElementById('profileRole').textContent = "Acesso Restrito";
+            document.getElementById('profileGrid').innerHTML = `
+                <div style="text-align:center; padding: 20px;">
+                    <i class="fas fa-user-lock" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 15px;"></i>
+                    <h3 style="color:#fff; margin-bottom: 10px;">RECRUTAMENTO NECESSÁRIO</h3>
+                    <p style="color:var(--text-muted); font-size: 0.9rem;">Para acessar o seu painel de metas e estatísticas, você precisa ser um membro oficial da Tropa Paquistão.</p>
+                    <button class="btn-primary" style="margin-top:20px;" onclick="closeModal('profileModal'); openModal('registerModal');">FAZER RECRUTAMENTO AGORA</button>
+                </div>
+            `;
             return;
         }
 

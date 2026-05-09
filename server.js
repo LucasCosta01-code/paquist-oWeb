@@ -68,12 +68,30 @@ app.get('/api/news', (req, res) => res.json(getDB().news));
 app.get('/api/stats', (req, res) => res.json({ members: cachedMemberCount }));
 
 // ── ROTA DO PERFIL (Conecta com faccao.db) ──
-app.get('/api/profile', (req, res) => {
+app.get('/api/profile', async (req, res) => {
     if (!req.cookies.discordUser) {
         return res.status(401).json({ error: 'Not logged in' });
     }
     const user = JSON.parse(req.cookies.discordUser);
     
+    // --- VERIFICAÇÃO DE CARGO NO DISCORD ---
+    const MEMBER_ROLE_ID = '1494537507310800928';
+    let hasRole = false;
+    try {
+        const guild = client.guilds.cache.first(); // Pega o primeiro servidor que o bot está
+        if (guild) {
+            const member = await guild.members.fetch(user.id);
+            hasRole = member.roles.cache.has(MEMBER_ROLE_ID);
+        }
+    } catch (e) {
+        console.log("Erro ao buscar cargo do membro:", e.message);
+    }
+
+    if (!hasRole) {
+        return res.json({ registered: false, discord: user, reason: 'NO_ROLE' });
+    }
+    // ----------------------------------------
+
     const volumePath = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
     const dbPath = path.join(volumePath, 'faccao.db');
     
@@ -91,7 +109,7 @@ app.get('/api/profile', (req, res) => {
         
         if (!row) {
             db.close();
-            return res.json({ registered: false, discord: user });
+            return res.json({ registered: false, discord: user, reason: 'NOT_IN_DB' });
         }
         
         db.all("SELECT tipo, SUM(quantidade) as total FROM entregas_meta WHERE discord_id = ? GROUP BY tipo", [user.id], (err, metas) => {
