@@ -5,7 +5,6 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const bodyParser = require('body-parser');
-const helmet = require('helmet');
 
 console.log("-----------------------------------------");
 console.log("🚀 TROPA PAQUISTÃO - INICIANDO SISTEMA...");
@@ -35,19 +34,17 @@ function saveDB(data) {
 const app = express();
 app.set('trust proxy', 1); // Essencial para Railway/Cloudflare
 
-// Segurança básica e Headers (HSTS, etc)
-app.use(helmet({
-    contentSecurityPolicy: false, // Desabilitado para não bloquear imagens do Discord e YouTube
-    crossOriginEmbedderPolicy: false // Permite embeds como YouTube/TikTok
-}));
-
 app.use(cors());
 app.use(bodyParser.json());
 
-// Força HTTPS (Redirecionamento automático e HSTS explícito caso helmet passe)
+// Segurança, Headers e Força HTTPS (Redirecionamento automático)
 app.use((req, res, next) => {
-    // Adiciona header de segurança explícito (Helmet já faz isso, mas garantimos aqui)
+    // Headers de segurança essenciais (Substitui o Helmet para não quebrar o npm ci)
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.removeHeader('X-Powered-By');
     
     // Checa se o request veio via HTTP original (através do proxy da Railway)
     if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
