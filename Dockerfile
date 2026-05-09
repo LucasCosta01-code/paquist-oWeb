@@ -21,7 +21,7 @@ RUN npm install
 
 # Copia e instala bibliotecas do Python
 COPY requirements.txt ./
-RUN pip3 install -r requirements.txt --break-system-packages
+RUN pip3 install -r requirements.txt
 
 # Copia todo o resto do projeto
 COPY . .
