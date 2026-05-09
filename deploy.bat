@@ -1,20 +1,16 @@
 @echo off
 echo ===================================================
-echo     CORRIGINDO ERRO DE SEGURANCA DO GITHUB
+echo     ATUALIZANDO SITE E BOTS NA RAILWAY
 echo ===================================================
 echo.
-echo [1/3] Removendo arquivo com senhas do ultimo pacote...
-git reset --soft HEAD~1
-git rm --cached .env
-echo.
-echo [2/3] Criando pacote seguro...
+echo [1/2] Criando pacote do Dockerfile...
 git add .
-git commit -m "Deploy seguro do novo sistema"
+git commit -m "Deploy do Dockerfile"
 echo.
-echo [3/3] Enviando para o GitHub/Railway...
-git push
+echo [2/2] Forcando envio para o GitHub/Railway...
+git push -f origin main
 echo.
 echo ===================================================
-echo ERRO CORRIGIDO COM SUCESSO!
+echo DEPLOY CONCLUIDO COM SUCESSO!
 echo ===================================================
 pause
