@@ -93,7 +93,17 @@ client.on('ready', async () => {
 
             const hasAttachment = message.attachments.size > 0;
             const attachmentUrl = hasAttachment ? message.attachments.first().url : null;
-            const content = message.content;
+            let content = message.content;
+            let customAuthor = null;
+            
+            // Extract "Autor: name" or "autor: name"
+            const authorMatch = content.match(/autor:\s*(.+)/i);
+            if (authorMatch) {
+                customAuthor = authorMatch[1].trim();
+                // Remove the author line from content so it doesn't show twice
+                content = content.replace(/autor:\s*(.+)/i, '').trim();
+            }
+
             const isVideoLink = content.includes('youtube.com') || content.includes('youtu.be') || content.includes('tiktok.com');
             const isImageLink = content.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
 
@@ -108,7 +118,7 @@ client.on('ready', async () => {
 
             const post = {
                 id: message.id,
-                author: message.author.username,
+                author: customAuthor || message.author.username,
                 authorAvatar: message.author.displayAvatarURL(),
                 date: new Date(message.createdTimestamp).toISOString(),
                 content: content
@@ -144,7 +154,15 @@ client.on('messageCreate', async (message) => {
 
     const hasAttachment = message.attachments.size > 0;
     const attachmentUrl = hasAttachment ? message.attachments.first().url : null;
-    const content = message.content;
+    let content = message.content;
+    let customAuthor = null;
+    
+    const authorMatch = content.match(/autor:\s*(.+)/i);
+    if (authorMatch) {
+        customAuthor = authorMatch[1].trim();
+        content = content.replace(/autor:\s*(.+)/i, '').trim();
+    }
+
     const isVideoLink = content.includes('youtube.com') || content.includes('youtu.be') || content.includes('tiktok.com');
     const isImageLink = content.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
 
@@ -159,7 +177,7 @@ client.on('messageCreate', async (message) => {
 
     const post = {
         id: message.id,
-        author: message.author.username,
+        author: customAuthor || message.author.username,
         authorAvatar: message.author.displayAvatarURL(),
         date: new Date().toISOString(),
         content: content

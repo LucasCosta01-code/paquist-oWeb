@@ -16,7 +16,46 @@ window.onclick = (e) => {
     if (e.target.classList.contains('modal')) {
         e.target.classList.remove('active');
     }
+    if (e.target.id === 'mediaLightbox') {
+        closeLightbox();
+    }
 };
+
+// Lightbox Functions
+function openLightbox(type, url) {
+    const lightbox = document.getElementById('mediaLightbox');
+    const contentBox = document.getElementById('lightboxContent');
+    
+    if (type === 'image') {
+        contentBox.innerHTML = `<img src="${url}" alt="Visualização">`;
+    } else if (type === 'video') {
+        // Convert YouTube URL to embed format if needed
+        let embedUrl = url;
+        const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+        const match = url.match(ytRegex);
+        if (match && match[1]) {
+            embedUrl = `https://www.youtube.com/embed/${match[1]}?autoplay=1`;
+            contentBox.innerHTML = `<iframe width="100%" height="100%" src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+        } else {
+            // Se for outro tipo de vídeo (MP4), usar tag de vídeo
+            if (url.match(/\.(mp4|webm|ogg)$/i)) {
+                 contentBox.innerHTML = `<video width="100%" height="100%" controls autoplay><source src="${url}" type="video/mp4"></video>`;
+            } else {
+                 // Fallback genérico iframe
+                 contentBox.innerHTML = `<iframe width="100%" height="100%" src="${url}" frameborder="0" allowfullscreen></iframe>`;
+            }
+        }
+    }
+    
+    lightbox.classList.add('active');
+}
+
+function closeLightbox() {
+    const lightbox = document.getElementById('mediaLightbox');
+    const contentBox = document.getElementById('lightboxContent');
+    lightbox.classList.remove('active');
+    setTimeout(() => contentBox.innerHTML = '', 300); // Clear content to stop video playing
+}
 
 // Content Sync
 async function syncAll() {
@@ -71,7 +110,7 @@ function renderGallery(items) {
     } else {
         section.style.display = 'block';
         feed.innerHTML = items.reverse().map(item => `
-            <div class="gallery-item-card">
+            <div class="gallery-item-card" style="cursor:pointer;" onclick="openLightbox('image', '${item.content}')">
                 <div class="gallery-item-media">
                     <img src="${item.content}" alt="Galeria" onerror="this.src='https://via.placeholder.com/400'">
                 </div>
@@ -97,14 +136,14 @@ function renderVideos(items) {
             const thumbUrl = item.thumb || "https://images.unsplash.com/photo-1614028674026-a65e31bfd27c?auto=format&fit=crop&q=80&w=800";
             return `
             <div class="video-card">
-                <div class="video-thumb">
+                <div class="video-thumb" style="cursor:pointer;" onclick="openLightbox('video', '${item.link}')">
                     <img src="${thumbUrl}" alt="Thumbnail">
-                    <a href="${item.link}" target="_blank" class="play-btn"><i class="fas fa-play-circle"></i></a>
+                    <div class="play-btn"><i class="fas fa-play-circle"></i></div>
                 </div>
                 <div class="video-info">
                     <h3 style="font-size: 1.1rem; margin-bottom: 5px;">${item.title || "Vídeo da Tropa"}</h3>
                     <p style="font-size: 0.8rem; opacity: 0.7;">Enviado por: ${item.author}</p>
-                    <a href="${item.link}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-size: 0.8rem; margin-top: 10px; display: inline-block;">VER NO YOUTUBE <i class="fas fa-external-link-alt"></i></a>
+                    <a href="javascript:void(0)" onclick="openLightbox('video', '${item.link}')" style="color: var(--primary-color); text-decoration: none; font-size: 0.8rem; margin-top: 10px; display: inline-block;">VER VÍDEO <i class="fas fa-play"></i></a>
                 </div>
             </div>
             `;

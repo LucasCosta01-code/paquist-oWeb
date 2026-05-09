@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tropa Paquistão - Oficial</title>
+    <link rel="icon" href="/logo.png" type="image/png">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -17,9 +18,9 @@
     </div>
 
     <nav class="navbar">
-        <div class="logo">
-            <span class="logo-white">TROPA</span> <span class="logo-green">PAQUISTÃO</span>
-        </div>
+        <a href="#inicio" class="logo-link">
+            <img src="/logo.png" alt="Logo Paquistão" class="logo-img">
+        </a>
         <ul class="nav-links">
             <li><a href="#inicio">INÍCIO</a></li>
             <li><a href="#historia">HISTÓRIA</a></li>
@@ -72,8 +73,8 @@
                             <span class="stat-label">MEMBROS</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-num">24/7</span>
-                            <span class="stat-label">ATIVIDADE</span>
+                            <span class="stat-num">Turquia</span>
+                            <span class="stat-label">parceria Turquia</span>
                         </div>
                     </div>
                 </div>
@@ -167,7 +168,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 TROPA DO PAQUISTÃO | CRIADO POR ANTIGRAVITY</p>
+        <p>&copy; 2026 TROPA DO PAQUISTÃO | CRIADO POR MSCODEX</p>
         <p class="footer-tagline">A LEALDADE É O NOSSO MAIOR TESOURO.</p>
     </footer>
 
@@ -277,6 +278,14 @@
                 <button type="submit" class="btn-submit">PUBLICAR AGORA</button>
             </form>
             <div id="galleryStatusMessage"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox for Media -->
+    <div id="mediaLightbox" class="lightbox">
+        <span class="lightbox-close" onclick="closeLightbox()"><i class="fas fa-times"></i></span>
+        <div class="lightbox-content" id="lightboxContent">
+            <!-- Image or Video injected here -->
         </div>
     </div>
 
