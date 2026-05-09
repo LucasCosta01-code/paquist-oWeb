@@ -40,6 +40,7 @@ app.use(express.static(__dirname));
 app.get('/api/gallery', (req, res) => res.json(getDB().gallery));
 app.get('/api/videos', (req, res) => res.json(getDB().videos));
 app.get('/api/news', (req, res) => res.json(getDB().news));
+app.get('/api/stats', (req, res) => res.json({ members: cachedMemberCount }));
 
 app.post('/api/submit', async (req, res) => {
     const { type, data } = req.body;
@@ -72,11 +73,14 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds, 
         GatewayIntentBits.GuildMessages, 
-        GatewayIntentBits.MessageContent
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers
     ] 
 });
 
 const TARGET_CHANNEL_ID = '1502504591097335828';
+const TARGET_ROLE_ID = '1492527673531171019';
+let cachedMemberCount = 0;
 
 client.on('ready', async () => {
     console.log(`✅ BOT ONLINE: Logado como ${client.user.tag}`);
@@ -84,6 +88,19 @@ client.on('ready', async () => {
 
     try {
         const channel = await client.channels.fetch(TARGET_CHANNEL_ID);
+        const guild = channel.guild;
+        
+        try {
+            await guild.members.fetch(); // Puxa todos os membros para cache
+            const role = guild.roles.cache.get(TARGET_ROLE_ID);
+            if (role) {
+                cachedMemberCount = role.members.size;
+                console.log(`👥 Contador de Membros: ${cachedMemberCount} encontrados no cargo.`);
+            }
+        } catch(e) {
+            console.error("⚠️ Aviso: SERVER MEMBERS INTENT não está ativada no Discord Developer Portal.");
+        }
+        
         const messages = await channel.messages.fetch({ limit: 100 });
         
         const db = { gallery: [], videos: [], news: [] };
@@ -244,6 +261,27 @@ client.on('messageDeleteBulk', async (messages) => {
 });
 
 
+
+client.on('guildMemberAdd', async (member) => {
+    try {
+        const role = member.guild.roles.cache.get(TARGET_ROLE_ID);
+        if (role) cachedMemberCount = role.members.size;
+    } catch(e) {}
+});
+
+client.on('guildMemberRemove', async (member) => {
+    try {
+        const role = member.guild.roles.cache.get(TARGET_ROLE_ID);
+        if (role) cachedMemberCount = role.members.size;
+    } catch(e) {}
+});
+
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+    try {
+        const role = newMember.guild.roles.cache.get(TARGET_ROLE_ID);
+        if (role) cachedMemberCount = role.members.size;
+    } catch(e) {}
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

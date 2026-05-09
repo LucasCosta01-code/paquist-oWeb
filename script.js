@@ -60,11 +60,17 @@ function closeLightbox() {
 // Content Sync
 async function syncAll() {
     try {
-        const [gallery, videos, news] = await Promise.all([
+        const [gallery, videos, news, stats] = await Promise.all([
             fetch(`${API_BASE}/gallery`).then(r => r.json()).catch(() => []),
             fetch(`${API_BASE}/videos`).then(r => r.json()).catch(() => []),
-            fetch(`${API_BASE}/news`).then(r => r.json()).catch(() => [])
+            fetch(`${API_BASE}/news`).then(r => r.json()).catch(() => []),
+            fetch(`${API_BASE}/stats`).then(r => r.json()).catch(() => ({ members: 20 }))
         ]);
+
+        const memberEl = document.getElementById("memberCount");
+        if (memberEl && stats.members > 0) {
+            memberEl.textContent = `+${stats.members}`;
+        }
 
         renderNews(news);
         renderGallery(gallery);

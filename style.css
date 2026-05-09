@@ -533,30 +533,77 @@ footer {
 @media (max-width: 768px) {
     .navbar {
         flex-direction: column;
-        gap: 15px;
-        padding: 15px;
+        gap: 10px;
+        padding: 10px;
     }
     .nav-links {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 15px;
+        gap: 10px;
+    }
+    .nav-links a {
+        font-size: 0.8rem;
+        padding: 5px;
+    }
+    .logo-img {
+        height: 40px;
+        width: 40px;
+    }
+    .hero {
+        padding: 0 20px;
     }
     .hero-buttons {
         flex-direction: column;
         gap: 15px;
+        width: 100%;
+        max-width: 300px;
     }
-    .hero-title-main, .hero-title-sub {
-        font-size: 2.8rem;
+    .btn {
+        width: 100%;
+        text-align: center;
+        padding: 15px 20px;
     }
-    .section-title {
+    .hero-title-main {
+        font-size: 2.2rem;
+        line-height: 1.1;
+    }
+    .hero-title-sub {
         font-size: 2.2rem;
     }
-    .section-header-flex {
+    .hero-desc {
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+    .section-container {
+        padding: 50px 20px;
+    }
+    .section-title {
+        font-size: 1.8rem;
+    }
+    .historia-container {
+        padding: 20px;
+    }
+    .historia-stats {
         flex-direction: column;
         gap: 20px;
     }
+    .stat-num {
+        font-size: 2rem;
+    }
+    .section-header-flex {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
     .gallery-item-media {
-        height: 250px;
+        height: 200px;
+    }
+    .video-card {
+        margin-bottom: 20px;
+    }
+    .modal-content {
+        padding: 30px 20px;
+        width: 95%;
     }
     .lightbox-content {
         width: 100%;
@@ -568,5 +615,6 @@ footer {
     .lightbox-close {
         top: 15px;
         right: 20px;
+        font-size: 2rem;
     }
 }
