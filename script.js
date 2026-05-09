@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = '/api';
 const MEMBER_ID_TARGET = '1492527673531171019';
 
 // Side-Panel Modal Functions
