@@ -175,16 +175,50 @@ button {
     align-items: center;
     gap: 12px;
     background: rgba(255, 255, 255, 0.05);
-    padding: 5px 15px 5px 5px;
-    border-radius: 30px;
+    padding: 5px 15px;
+    border-radius: 50px;
     border: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: 0.3s ease;
+    transition: var(--smooth);
 }
+
 .user-widget.active { display: flex; }
-.user-widget:hover { background: rgba(0, 255, 136, 0.1); border-color: var(--primary-color); }
-.user-avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--primary-color); }
-.user-name { font-size: 0.85rem; font-weight: 700; color: #fff; }
+.user-widget:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--primary-color); }
+
+.user-info-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.user-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.user-badge {
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 1px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .btn-discord { background-color: #5865F2; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3); }
 .btn-discord:hover { background-color: #4752C4; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(88, 101, 242, 0.5); }
 

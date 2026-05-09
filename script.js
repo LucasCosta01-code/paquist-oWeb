@@ -25,18 +25,37 @@ async function checkAuth() {
                 document.getElementById('btnDiscordLogin').style.display = 'none';
                 const widget = document.getElementById('userWidget');
                 widget.classList.add('active');
-                document.getElementById('userName').textContent = user.username;
-                document.getElementById('userAvatar').src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+                
+                // Define colors for badges
+                const statusColors = {
+                    'MEMBRO': '#00ff88',
+                    'RECRUTA': '#ffa502',
+                    'VISITANTE': '#2ed573',
+                    'CONVIDADO': '#94a3b8'
+                };
+                const color = statusColors[user.status] || '#94a3b8';
+
+                widget.innerHTML = `
+                    <div class="user-info-wrap">
+                        <img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" alt="Avatar" class="user-avatar">
+                        <div class="user-details">
+                            <span class="user-name">${user.username}</span>
+                            <span class="user-badge" style="background: ${color}22; color: ${color}; border: 1px solid ${color}44;">${user.status}</span>
+                        </div>
+                    </div>
+                    <i class="fas fa-sign-out-alt" style="color: #ff3333; cursor:pointer; margin-left: 10px;" onclick="logout()" title="Sair"></i>
+                `;
                 
                 // Add click listener to open profile
-                widget.onclick = openProfile;
+                widget.onclick = (e) => {
+                    if (!e.target.classList.contains('fa-sign-out-alt')) {
+                        openProfile();
+                    }
+                };
                 
                 // Pre-fill forms
                 const dIds = document.querySelectorAll('input[name="discordId"], input[name="discord"]');
                 dIds.forEach(el => { el.value = user.username; el.readOnly = true; });
-                
-                const dNames = document.querySelectorAll('input[name="author"], input[name="nickname"]');
-                dNames.forEach(el => { el.value = user.username; });
             }
         }
     } catch (e) { console.log('Not logged in'); }
