@@ -122,7 +122,7 @@ async function openProfile() {
                 ${progressoHTML || '<p style="color:#aaa; font-size:0.8rem; text-align:center;">Nenhuma meta configurada no bot.</p>'}
             </div>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px;">
+            <div class="stats-container">
                 <div class="profile-stat">
                     <i class="fas fa-coins"></i>
                     <div class="stat-val">${data.stats.farm_semanal}</div>

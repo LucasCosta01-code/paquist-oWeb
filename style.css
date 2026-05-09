@@ -692,11 +692,24 @@ footer {
 
 /* Profile Modal Styles */
 .profile-modal {
-    max-width: 650px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
     background: var(--bg-glass) !important;
     backdrop-filter: blur(40px) !important;
     border: 1px solid var(--border-hover) !important;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    padding: 30px !important;
+}
+
+/* Custom Scrollbar for Modal */
+.profile-modal::-webkit-scrollbar {
+    width: 6px;
+}
+.profile-modal::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
 }
 
 .profile-header {
@@ -733,9 +746,15 @@ footer {
 }
 
 .profile-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 20px;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 15px;
 }
 
 .profile-stat {
@@ -780,13 +799,13 @@ footer {
 
 /* Meta Progress Dashboard */
 .meta-dashboard {
-    background: rgba(0, 255, 136, 0.03);
+    background: rgba(0, 255, 136, 0.05);
     border: 1px solid var(--border-hover);
-    border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 30px;
+    border-radius: 16px;
+    padding: 20px;
     position: relative;
     overflow: hidden;
+    width: 100%;
 }
 
 .meta-dashboard::before {
