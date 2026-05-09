@@ -444,7 +444,8 @@ app.listen(PORT, () => {
     console.log("-----------------------------------------");
 });
 
-client.login(process.env.DISCORD_TOKEN).catch(err => {
+const discordToken = (process.env.DISCORD_TOKEN || "").trim();
+client.login(discordToken).catch(err => {
     console.error("❌ ERRO AO LOGAR NO BOT: Verifique seu Token no .env");
     console.error(err);
 });
