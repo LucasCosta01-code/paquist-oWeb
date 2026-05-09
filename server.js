@@ -32,12 +32,14 @@ function saveDB(data) {
 
 // Express Setup
 const app = express();
+app.set('trust proxy', true); // Essencial para Railway/Cloudflare
 app.use(cors());
 app.use(bodyParser.json());
 
 // Força HTTPS (Redirecionamento automático)
 app.use((req, res, next) => {
-    if (req.headers['x-forwarded-proto'] === 'http') {
+    // Checa se o request veio via HTTP original (através do proxy)
+    if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
         return res.redirect(`https://${req.headers.host}${req.url}`);
     }
     next();
