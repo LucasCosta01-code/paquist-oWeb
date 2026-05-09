@@ -67,42 +67,87 @@ async function openProfile() {
         document.getElementById('profileRole').textContent = data.stats.cargo || "Sem cargo";
         document.getElementById('profileAvatar').src = `https://cdn.discordapp.com/avatars/${data.discord.id}/${data.discord.avatar}.png`;
 
+        // Determinar o status da meta
+        let isMetaBatida = false;
+        let progressoHTML = '';
+        const modo = data.modoMeta || 'ou';
+        
+        if (data.targetMetas && Object.keys(data.targetMetas).length > 0) {
+            const targets = data.targetMetas;
+            const entregas = data.metas;
+            
+            let condicoesAtendidas = 0;
+            let totalCondicoes = Object.keys(targets).length;
+            
+            for (const tipo in targets) {
+                const target = targets[tipo];
+                const entregue = entregas[tipo] || 0;
+                let pct = Math.min(100, Math.round((entregue / target) * 100));
+                
+                if (entregue >= target) condicoesAtendidas++;
+                
+                const nomeAmigavel = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+                
+                progressoHTML += `
+                    <div class="progress-item">
+                        <div class="progress-labels">
+                            <span>${nomeAmigavel} (${entregue}/${target})</span>
+                            <span>${pct}%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: ${pct}%;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (modo === 'ou') {
+                isMetaBatida = condicoesAtendidas > 0;
+            } else {
+                isMetaBatida = condicoesAtendidas >= totalCondicoes;
+            }
+        }
+        
+        const badgeClass = isMetaBatida ? "success" : "pending";
+        const badgeText = isMetaBatida ? "✅ Meta Batida" : "❌ Pendente";
+
         const grid = document.getElementById('profileGrid');
+        
         grid.innerHTML = `
-            <div class="profile-stat">
-                <i class="fas fa-coins"></i>
-                <div class="stat-val">${data.stats.farm_semanal}</div>
-                <div class="stat-lbl">Farm Semanal</div>
+            <div class="meta-dashboard">
+                <div class="meta-dashboard-header">
+                    <h3><i class="fas fa-bullseye"></i> Progresso da Meta</h3>
+                    <div class="status-badge ${badgeClass}">${badgeText}</div>
+                </div>
+                ${progressoHTML || '<p style="color:#aaa; font-size:0.8rem; text-align:center;">Nenhuma meta configurada no bot.</p>'}
             </div>
-            <div class="profile-stat">
-                <i class="fas fa-sack-dollar"></i>
-                <div class="stat-val">${data.stats.farm_total}</div>
-                <div class="stat-lbl">Farm Total</div>
-            </div>
-            <div class="profile-stat">
-                <i class="fas fa-bomb"></i>
-                <div class="stat-val">${data.metas.c4}</div>
-                <div class="stat-lbl">C4 Entregue</div>
-            </div>
-            <div class="profile-stat">
-                <i class="fas fa-recycle"></i>
-                <div class="stat-val">${data.metas.plasticos}</div>
-                <div class="stat-lbl">Plásticos</div>
-            </div>
-            <div class="profile-stat stat-danger">
-                <i class="fas fa-exclamation-triangle"></i>
-                <div class="stat-val">${data.stats.advertencias}</div>
-                <div class="stat-lbl">Advertências</div>
-            </div>
-            <div class="profile-stat stat-danger">
-                <i class="fas fa-gavel"></i>
-                <div class="stat-val">${data.stats.punicoes}</div>
-                <div class="stat-lbl">Punições</div>
-            </div>
-            <div class="profile-stat">
-                <i class="fas fa-calendar-check"></i>
-                <div class="stat-val">${data.stats.presencas}</div>
-                <div class="stat-lbl">Presenças</div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px;">
+                <div class="profile-stat">
+                    <i class="fas fa-coins"></i>
+                    <div class="stat-val">${data.stats.farm_semanal}</div>
+                    <div class="stat-lbl">Farm Semanal</div>
+                </div>
+                <div class="profile-stat">
+                    <i class="fas fa-sack-dollar"></i>
+                    <div class="stat-val">${data.stats.farm_total}</div>
+                    <div class="stat-lbl">Farm Total</div>
+                </div>
+                <div class="profile-stat stat-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="stat-val">${data.stats.advertencias}</div>
+                    <div class="stat-lbl">Advertências</div>
+                </div>
+                <div class="profile-stat stat-danger">
+                    <i class="fas fa-gavel"></i>
+                    <div class="stat-val">${data.stats.punicoes}</div>
+                    <div class="stat-lbl">Punições</div>
+                </div>
+                <div class="profile-stat">
+                    <i class="fas fa-calendar-check"></i>
+                    <div class="stat-val">${data.stats.presencas}</div>
+                    <div class="stat-lbl">Presenças</div>
+                </div>
             </div>
         `;
     } catch (e) {

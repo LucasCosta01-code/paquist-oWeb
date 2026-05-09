@@ -95,17 +95,42 @@ app.get('/api/profile', (req, res) => {
         }
         
         db.all("SELECT tipo, SUM(quantidade) as total FROM entregas_meta WHERE discord_id = ? GROUP BY tipo", [user.id], (err, metas) => {
-            db.close();
             const metaTotals = { c4: 0, plasticos: 0, colete: 0, corda: 0, capuz: 0 };
             if (metas) {
                 metas.forEach(m => metaTotals[m.tipo] = m.total);
             }
             
-            res.json({
-                registered: true,
-                discord: user,
-                stats: row,
-                metas: metaTotals
+            db.all("SELECT chave, valor FROM bot_config WHERE chave LIKE 'meta_%' OR chave = 'modo_meta'", [], (err, configRows) => {
+                db.close();
+                const targetMetas = {};
+                let modoMeta = 'ou';
+                
+                if (configRows && configRows.length > 0) {
+                    configRows.forEach(row => {
+                        if (row.chave === 'modo_meta') {
+                            modoMeta = row.valor;
+                        } else {
+                            const tipo = row.chave.replace('meta_', '');
+                            const val = parseInt(row.valor);
+                            if (val > 0) targetMetas[tipo] = val;
+                        }
+                    });
+                }
+                
+                // Fallback to defaults if no targets defined
+                if (Object.keys(targetMetas).length === 0) {
+                    targetMetas.c4 = 75;
+                    targetMetas.plasticos = 300;
+                }
+                
+                res.json({
+                    registered: true,
+                    discord: user,
+                    stats: row,
+                    metas: metaTotals,
+                    targetMetas: targetMetas,
+                    modoMeta: modoMeta
+                });
             });
         });
     });
