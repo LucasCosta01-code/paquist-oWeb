@@ -48,7 +48,8 @@ COR_INFO        = 0x2C2F33   # Cinza escuro para informações
 COR_PRETA       = 0x1A1A1A   # Quase preta para embeds principais
 
 # ─── CAMINHO DO BANCO DE DADOS ─────────────────────────────────────────────────
-DATABASE_PATH = "faccao.db"
+volume_path = os.getenv("RAILWAY_VOLUME_MOUNT_PATH", "")
+DATABASE_PATH = os.path.join(volume_path, "faccao.db") if volume_path else "faccao.db"
 
 # ─── SISTEMA DE BATE-PONTO ─────────────────────────────────────────────────────
 CANAL_LOG_PONTO_ID        = 1501559832090775793   # Canal onde os logs de ponto são enviados

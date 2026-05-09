@@ -73,9 +73,11 @@ app.get('/api/profile', (req, res) => {
     }
     const user = JSON.parse(req.cookies.discordUser);
     
-    const dbPath = path.join(__dirname, 'faccao.db');
+    const volumePath = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
+    const dbPath = path.join(volumePath, 'faccao.db');
+    
     if (!fs.existsSync(dbPath)) {
-        return res.status(500).json({ error: 'Database faccao.db not found' });
+        return res.json({ registered: false, discord: user, error: 'DB_NOT_FOUND' });
     }
     
     const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY);
