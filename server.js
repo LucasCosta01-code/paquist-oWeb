@@ -72,7 +72,7 @@ const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:3000/api/auth
 
 app.get('/api/auth/discord', (req, res) => {
     if (!DISCORD_CLIENT_ID) return res.send("ERRO: Configure o DISCORD_CLIENT_ID no .env");
-    const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
+    const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds`;
     res.redirect(url);
 });
 
@@ -89,9 +89,34 @@ app.get('/api/auth/callback', async (req, res) => {
         const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', params.toString(), {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         });
+        
+        const accessToken = tokenResponse.data.access_token;
+
         const userResponse = await axios.get('https://discord.com/api/users/@me', {
-            headers: { Authorization: `Bearer ${tokenResponse.data.access_token}` }
+            headers: { Authorization: `Bearer ${accessToken}` }
         });
+        
+        // --- VERIFICAÇÃO SE ESTÁ NO DISCORD DA FACÇÃO ---
+        const guildsResponse = await axios.get('https://discord.com/api/users/@me/guilds', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        
+        // Pega o ID do servidor baseado no canal configurado no .env
+        const factionChannel = client.channels.cache.get(process.env.CHANNEL_ALISTAMENTO);
+        if (!factionChannel) {
+            console.error("ERRO: O bot não encontrou o canal configurado. Verifique os IDs no .env");
+            return res.redirect('/?error=bot_not_ready');
+        }
+        const factionGuildId = factionChannel.guild.id;
+        
+        const isInFaction = guildsResponse.data.some(guild => guild.id === factionGuildId);
+        
+        if (!isInFaction) {
+            // O usuário não está no grupo da facção
+            return res.redirect('/?error=not_in_faction');
+        }
+        // --------------------------------------------------
+
         // Salva dados no cookie
         res.cookie('discordUser', JSON.stringify({
             id: userResponse.data.id,

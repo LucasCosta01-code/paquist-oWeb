@@ -1,5 +1,17 @@
 const API_BASE = '/api';
 const MEMBER_ID_TARGET = '1492527673531171019';
+
+// Tratar erros de Login
+window.onload = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error') === 'not_in_faction') {
+        alert("⚠️ ACESSO NEGADO: Você precisa estar no Servidor do Discord da Tropa Paquistão para fazer login no site!");
+        window.history.replaceState({}, document.title, "/");
+    } else if (params.get('error') === 'bot_not_ready') {
+        alert("⚠️ ERRO: O sistema do bot ainda está conectando. Tente novamente em alguns segundos.");
+        window.history.replaceState({}, document.title, "/");
+    }
+};
 let currentUser = null;
 
 // Auth Check

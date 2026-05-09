@@ -1,24 +1,20 @@
 @echo off
 echo ===================================================
-echo     RESOLVENDO ERRO DO NPM CI DEFINITIVAMENTE
+echo     CORRIGINDO ERRO DE SEGURANCA DO GITHUB
 echo ===================================================
 echo.
-echo [1/4] Removendo arquivo package-lock.json que causa o conflito...
-git rm -f package-lock.json
-del package-lock.json
+echo [1/3] Removendo arquivo com senhas do ultimo pacote...
+git reset --soft HEAD~1
+git rm --cached .env
 echo.
-echo [2/4] Preparando correcoes...
+echo [2/3] Criando pacote seguro...
 git add .
+git commit -m "Deploy seguro do novo sistema"
 echo.
-echo [3/4] Salvando...
-git commit -m "Remove package-lock para forcar npm install"
-echo.
-echo [4/4] Enviando para a Railway...
+echo [3/3] Enviando para o GitHub/Railway...
 git push
 echo.
 echo ===================================================
-echo FEITO! O ERRO FOI ELIMINADO!
-echo Agora olhe no painel da Railway, o novo deploy vai 
-echo usar 'npm install' e o site vai ficar online!
+echo ERRO CORRIGIDO COM SUCESSO!
 echo ===================================================
 pause
