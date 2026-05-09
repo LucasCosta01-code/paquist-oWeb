@@ -34,7 +34,8 @@ function openLightbox(type, url) {
         const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
         const match = url.match(ytRegex);
         if (match && match[1]) {
-            embedUrl = `https://www.youtube.com/embed/${match[1]}?autoplay=1`;
+            // Remove o vermelho usando color=white e melhora UX com modestbranding e rel=0
+            embedUrl = `https://www.youtube.com/embed/${match[1]}?autoplay=1&color=white&modestbranding=1&rel=0`;
             contentBox.innerHTML = `<iframe width="100%" height="100%" src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
         } else {
             // Se for outro tipo de vídeo (MP4), usar tag de vídeo
@@ -56,6 +57,19 @@ function closeLightbox() {
     lightbox.classList.remove('active');
     setTimeout(() => contentBox.innerHTML = '', 300); // Clear content to stop video playing
 }
+
+// 3D Parallax Effect & UX Dynamic Blur
+window.addEventListener('scroll', () => {
+    const bg = document.querySelector('.background-container');
+    const scrollPos = window.scrollY;
+    if (bg) {
+        // Efeito 3D: A imagem dá um zoom e desce levemente conforme rola a página
+        // Efeito UX: A imagem vai ficando borrada (blur) conforme desce, focando a atenção na leitura!
+        const blurValue = Math.min(scrollPos * 0.015, 10); // Borra até no máximo 10px
+        bg.style.transform = `translateY(${scrollPos * 0.15}px) scale(${1 + scrollPos * 0.0003})`;
+        bg.style.filter = `blur(${blurValue}px) brightness(${1 - scrollPos * 0.0005})`; // Escurece levemente também
+    }
+});
 
 // Content Sync
 async function syncAll() {
