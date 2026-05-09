@@ -215,7 +215,16 @@ function closeLightbox() {
 // 3D Parallax Effect & UX Dynamic Blur
 window.addEventListener('scroll', () => {
     const bg = document.querySelector('.background-container');
+    const nav = document.querySelector('.navbar');
     const scrollPos = window.scrollY;
+
+    // Navbar effect
+    if (scrollPos > 50) {
+        nav.classList.add('scrolled');
+    } else {
+        nav.classList.remove('scrolled');
+    }
+
     if (bg) {
         // Efeito 3D: A imagem dá um zoom e desce levemente conforme rola a página
         // Efeito UX: A imagem vai ficando borrada (blur) conforme desce, focando a atenção na leitura!
