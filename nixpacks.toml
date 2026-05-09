@@ -1,0 +1,9 @@
+[providers]
+node = {}
+python = {}
+
+[phases.install]
+cmds = ["npm install", "pip install -r requirements.txt"]
+
+[start]
+cmd = "npm start"

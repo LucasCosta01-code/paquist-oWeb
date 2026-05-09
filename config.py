@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ─── TOKEN E IDs ───────────────────────────────────────────────────────────────
-TOKEN = os.getenv("PYTHON_DISCORD_TOKEN") or os.getenv("DISCORD_TOKEN")
+TOKEN = (os.getenv("PYTHON_DISCORD_TOKEN") or os.getenv("DISCORD_TOKEN") or "").strip()
 LOG_CHANNEL_ID         = int(os.getenv("LOG_CHANNEL_ID", 0))          # Canal de logs de ações do bot
 LOG_CANAL_SERVIDOR_ID  = int(os.getenv("LOG_CANAL_SERVIDOR_ID", 0))   # Canal de logs do servidor (tudo)
 META_FARM_SEMANAL      = int(os.getenv("META_FARM_SEMANAL", 50))      # Meta padrão de farm semanal
