@@ -14,7 +14,8 @@ console.log("🚀 TROPA PAQUISTÃO - INICIANDO SISTEMA...");
 console.log("-----------------------------------------");
 
 // Database Setup
-const DB_PATH = path.join(__dirname, 'database.json');
+const volumePath = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
+const DB_PATH = path.join(volumePath, 'database.json');
 
 function getDB() {
 
