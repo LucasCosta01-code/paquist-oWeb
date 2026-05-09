@@ -1,0 +1,215 @@
+══════════════════════════════════════════════════════════════
+   ⚔️  FACÇÃO BOT — MANUAL COMPLETO DE COMANDOS  ⚔️
+══════════════════════════════════════════════════════════════
+
+Este arquivo contém TODOS os comandos disponíveis no bot, organizados por sistema.
+Use-os com sabedoria para manter a organização da facção.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🎫 SISTEMA DE TICKETS (ESTILO PREMIUM)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/ticket_admin
+  → PAINEL DE CONTROLE: Gerencie textos, cores, banners e modo de menu (Botões ou Dropdown).
+  → Permissão: Liderança
+
+/ticket_setup
+  → Envia o painel de atendimento configurado no canal atual.
+  → Canal Oficial Sugerido: <#1495006449942794300>
+  → Permissão: Liderança
+
+/ticket_fechar_admin [canal]
+  → Fecha e deleta um canal de ticket forçadamente pelo ADM.
+  → Permissão: Liderança
+
+/ticket_add_opcao [nome] [categoria_id] [cargo_ids] [emoji] [descricao]
+  → Adiciona uma categoria de atendimento ao sistema.
+  → Permissão: Liderança
+
+/ticket_del_opcao
+  → Remove uma categoria de atendimento via menu interativo.
+  → Permissão: Liderança
+
+/ticket_editar
+  → Abre formulário para editar o visual do painel rapidamente.
+  → Permissão: Liderança
+
+/ticket_listar
+  → Mostra o resumo da configuração atual dos tickets.
+  → Permissão: Liderança
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📦 SISTEMA DE METAS & HIERARQUIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/v
+  → Sincroniza o servidor: lista membros e limpa inativos do banco.
+  → Permissão: Liderança
+
+/registrar_meta [membro] [tipo] [quantidade]
+  → Registra entrega de C4 ou Plásticos para um membro.
+  → Permissão: Liderança + Farm
+
+/meta
+  → Consulta o status das metas (quem bateu e quem falta).
+  → Permissão: Todos
+
+/verificar_metas
+  → Escaneia membros e atualiza cargos de meta automaticamente.
+  → Permissão: Liderança
+
+/punir_inativos
+  → Aplica punição automática em quem não bateu a meta.
+  → Permissão: Liderança
+
+/add_punicao [membro] [motivo]
+  → Adiciona uma punição manual ao histórico do membro.
+  → Permissão: Liderança
+
+/ver_punicoes [membro]
+  → Consulta o histórico de punições de um membro.
+  → Permissão: Liderança
+
+/r [membro] [motivo]
+  → Remove membro da facção (remove cargos e avisa geral).
+  → Permissão: Liderança
+
+/up [membro] [novo_cargo] [motivo]
+  → Promove um membro na hierarquia.
+  → Permissão: Liderança
+
+/rup [membro] [cargo_rem] [cargo_add] [motivo]
+  → Rebaixa um membro na hierarquia.
+  → Permissão: Liderança
+
+/config_meta [tipo] [valor]
+  → Define o valor da meta semanal.
+  → Permissão: Liderança
+
+/modo_meta [modo]
+  → Alterna entre modo 'OU' (um item bate) ou 'E' (todos os itens).
+  → Permissão: Liderança
+
+/resetar_metas
+  → Zera todas as contagens para o início da semana.
+  → Permissão: Fundadores
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱️ BATE-PONTO & AUDITORIA DE VOZ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/painel_ponto
+  → Envia o painel interativo de entrada/saída de serviço.
+  → Canal Oficial: <#1501560241643589762>
+  → Permissão: Liderança
+
+/abrir_ponto_admin [membro] [motivo]
+  → Inicia forçadamente o ponto de um membro.
+  → Permissão: Liderança
+
+/parar_ponto_admin [membro] [motivo]
+  → Encerra forçadamente o ponto de um membro.
+  → Permissão: Liderança
+
+/ranking_ponto
+  → Ranking de quem mais trabalhou na semana.
+  → Permissão: Todos
+
+/historico_ponto [membro]
+  → Veja todos os registros de entrada/saída detalhados.
+  → Permissão: Liderança
+
+/config_auditoria
+  → Configura a verificação automática de quem está fora da call.
+  → Permissão: Liderança
+
+/verificar_call
+  → Lista todos na sua call e o status do ponto de cada um.
+  → Permissão: Liderança
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🌾 SISTEMA DE FARM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/adicionar_farm [membro] [qtd] [tipo]
+  → Registra farm de itens coletados.
+  → Permissão: Farm + Liderança
+
+/remover_farm [membro] [qtd] [motivo]
+  → Remove farm registrado por erro ou punição.
+  → Permissão: Liderança
+
+/ranking_farm
+  → Ranking semanal de farm (Top 10).
+  → Permissão: Todos
+
+/ver_meta [membro]
+  → Verifica especificamente se um membro bateu a meta de farm.
+  → Permissão: Todos
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔨 MODERAÇÃO & REGISTRO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/limpar [quantidade]
+  → Apaga mensagens do canal atual.
+  → Permissão: Liderança
+
+/add_membro [usuario]
+  → Dá o cargo oficial de membro e envia as boas-vindas.
+  → Permissão: Liderança
+
+/setup_registro
+  → Envia o painel para novos membros (Recrutado/Visitante).
+  → Permissão: Liderança
+
+/perfil_membro [membro]
+  → Cartão completo: ID, Farm, Metas e Punições.
+  → Permissão: Todos
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📅 OUTROS UTILITÁRIOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/aviso [mensagem]
+  → Envia um aviso formatado no canal de anúncios.
+  → Permissão: Liderança
+
+/marcar_reuniao [data] [hora]
+  → Agenda reunião com sistema de presença.
+  → Permissão: Liderança
+
+/status_servidor
+  → Estatísticas em tempo real da facção.
+  → Permissão: Liderança
+
+/clonar [id_servidor]
+  → Clona estrutura de canais e cargos (Fundadores).
+  → Permissão: Fundador
+
+/config_boas_vindas
+  → Configura a mensagem automática de novos membros.
+  → Permissão: Liderança
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📁 REGISTROS AUTOMÁTICOS (LOGS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+O bot registra automaticamente em canais específicos:
+- Edição e Exclusão de mensagens.
+- Entrada e Saída de membros (baixa automática no banco).
+- Troca de Apelidos e Cargos.
+- Movimentação em canais de voz.
+- Transcrições de Tickets fechados (em arquivo .txt).
+
+
+══════════════════════════════════════════════════════════════
+  Total de comandos: ~75
+  Versão: 2.5 — Gold Edition
+  Desenvolvido por: Facção Bot System
+══════════════════════════════════════════════════════════════

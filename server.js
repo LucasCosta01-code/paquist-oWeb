@@ -7,6 +7,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const cookieParser = require('cookie-parser');
+const sqlite3 = require('sqlite3').verbose();
 
 console.log("-----------------------------------------");
 console.log("🚀 TROPA PAQUISTÃO - INICIANDO SISTEMA...");
@@ -64,6 +65,48 @@ app.get('/api/gallery', (req, res) => res.json(getDB().gallery));
 app.get('/api/videos', (req, res) => res.json(getDB().videos));
 app.get('/api/news', (req, res) => res.json(getDB().news));
 app.get('/api/stats', (req, res) => res.json({ members: cachedMemberCount }));
+
+// ── ROTA DO PERFIL (Conecta com faccao.db) ──
+app.get('/api/profile', (req, res) => {
+    if (!req.cookies.discordUser) {
+        return res.status(401).json({ error: 'Not logged in' });
+    }
+    const user = JSON.parse(req.cookies.discordUser);
+    
+    const dbPath = path.join(__dirname, 'faccao.db');
+    if (!fs.existsSync(dbPath)) {
+        return res.status(500).json({ error: 'Database faccao.db not found' });
+    }
+    
+    const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY);
+    
+    db.get("SELECT * FROM membros WHERE discord_id = ?", [user.id], (err, row) => {
+        if (err) {
+            db.close();
+            return res.status(500).json({ error: 'Database query error' });
+        }
+        
+        if (!row) {
+            db.close();
+            return res.json({ registered: false, discord: user });
+        }
+        
+        db.all("SELECT tipo, SUM(quantidade) as total FROM entregas_meta WHERE discord_id = ? GROUP BY tipo", [user.id], (err, metas) => {
+            db.close();
+            const metaTotals = { c4: 0, plasticos: 0, colete: 0, corda: 0, capuz: 0 };
+            if (metas) {
+                metas.forEach(m => metaTotals[m.tipo] = m.total);
+            }
+            
+            res.json({
+                registered: true,
+                discord: user,
+                stats: row,
+                metas: metaTotals
+            });
+        });
+    });
+});
 
 // Discord OAuth2 Routes
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;

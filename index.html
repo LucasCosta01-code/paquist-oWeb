@@ -300,6 +300,24 @@
         </div>
     </div>
 
+    <!-- Modal de Perfil -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content profile-modal">
+            <span class="close" onclick="document.getElementById('profileModal').classList.remove('active')">&times;</span>
+            <div class="profile-header">
+                <img src="" id="profileAvatar" alt="Avatar">
+                <div class="profile-title">
+                    <h2 id="profileName">Carregando...</h2>
+                    <p id="profileRole" class="text-green">Buscando cargo...</p>
+                </div>
+            </div>
+            
+            <div class="profile-grid" id="profileGrid">
+                <!-- Status gerados via JS -->
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 

@@ -28,6 +28,9 @@ async function checkAuth() {
                 document.getElementById('userName').textContent = user.username;
                 document.getElementById('userAvatar').src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
                 
+                // Add click listener to open profile
+                widget.onclick = openProfile;
+                
                 // Pre-fill forms
                 const dIds = document.querySelectorAll('input[name="discordId"], input[name="discord"]');
                 dIds.forEach(el => { el.value = user.username; el.readOnly = true; });
@@ -42,6 +45,69 @@ checkAuth();
 
 function logout() {
     window.location.href = `${API_BASE}/auth/logout`;
+}
+
+async function openProfile() {
+    document.getElementById('profileName').textContent = "Carregando...";
+    openModal('profileModal');
+    
+    try {
+        const res = await fetch(`${API_BASE}/profile`);
+        const data = await res.json();
+        
+        if (!data.registered) {
+            document.getElementById('profileName').textContent = data.discord.username;
+            document.getElementById('profileAvatar').src = `https://cdn.discordapp.com/avatars/${data.discord.id}/${data.discord.avatar}.png`;
+            document.getElementById('profileRole').textContent = "Membro não registrado no Bot";
+            document.getElementById('profileGrid').innerHTML = "<p>Você precisa estar registrado no bot do Discord para ver suas metas aqui.</p>";
+            return;
+        }
+
+        document.getElementById('profileName').textContent = data.stats.nome;
+        document.getElementById('profileRole').textContent = data.stats.cargo || "Sem cargo";
+        document.getElementById('profileAvatar').src = `https://cdn.discordapp.com/avatars/${data.discord.id}/${data.discord.avatar}.png`;
+
+        const grid = document.getElementById('profileGrid');
+        grid.innerHTML = `
+            <div class="profile-stat">
+                <i class="fas fa-coins"></i>
+                <div class="stat-val">${data.stats.farm_semanal}</div>
+                <div class="stat-lbl">Farm Semanal</div>
+            </div>
+            <div class="profile-stat">
+                <i class="fas fa-sack-dollar"></i>
+                <div class="stat-val">${data.stats.farm_total}</div>
+                <div class="stat-lbl">Farm Total</div>
+            </div>
+            <div class="profile-stat">
+                <i class="fas fa-bomb"></i>
+                <div class="stat-val">${data.metas.c4}</div>
+                <div class="stat-lbl">C4 Entregue</div>
+            </div>
+            <div class="profile-stat">
+                <i class="fas fa-recycle"></i>
+                <div class="stat-val">${data.metas.plasticos}</div>
+                <div class="stat-lbl">Plásticos</div>
+            </div>
+            <div class="profile-stat stat-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="stat-val">${data.stats.advertencias}</div>
+                <div class="stat-lbl">Advertências</div>
+            </div>
+            <div class="profile-stat stat-danger">
+                <i class="fas fa-gavel"></i>
+                <div class="stat-val">${data.stats.punicoes}</div>
+                <div class="stat-lbl">Punições</div>
+            </div>
+            <div class="profile-stat">
+                <i class="fas fa-calendar-check"></i>
+                <div class="stat-val">${data.stats.presencas}</div>
+                <div class="stat-lbl">Presenças</div>
+            </div>
+        `;
+    } catch (e) {
+        document.getElementById('profileName').textContent = "Erro ao carregar";
+    }
 }
 
 // Side-Panel Modal Functions
