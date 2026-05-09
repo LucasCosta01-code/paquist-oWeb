@@ -5,6 +5,8 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const bodyParser = require('body-parser');
+const axios = require('axios');
+const cookieParser = require('cookie-parser');
 
 console.log("-----------------------------------------");
 console.log("🚀 TROPA PAQUISTÃO - INICIANDO SISTEMA...");
@@ -36,6 +38,7 @@ app.set('trust proxy', 1); // Essencial para Railway/Cloudflare
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 // Segurança, Headers e Força HTTPS (Redirecionamento automático)
 app.use((req, res, next) => {
@@ -62,8 +65,64 @@ app.get('/api/videos', (req, res) => res.json(getDB().videos));
 app.get('/api/news', (req, res) => res.json(getDB().news));
 app.get('/api/stats', (req, res) => res.json({ members: cachedMemberCount }));
 
+// Discord OAuth2 Routes
+const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:3000/api/auth/callback';
+
+app.get('/api/auth/discord', (req, res) => {
+    if (!DISCORD_CLIENT_ID) return res.send("ERRO: Configure o DISCORD_CLIENT_ID no .env");
+    const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
+    res.redirect(url);
+});
+
+app.get('/api/auth/callback', async (req, res) => {
+    if (!req.query.code) return res.redirect('/');
+    try {
+        const params = new URLSearchParams({
+            client_id: DISCORD_CLIENT_ID,
+            client_secret: DISCORD_CLIENT_SECRET,
+            grant_type: 'authorization_code',
+            code: req.query.code,
+            redirect_uri: REDIRECT_URI
+        });
+        const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', params.toString(), {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+        const userResponse = await axios.get('https://discord.com/api/users/@me', {
+            headers: { Authorization: `Bearer ${tokenResponse.data.access_token}` }
+        });
+        // Salva dados no cookie
+        res.cookie('discordUser', JSON.stringify({
+            id: userResponse.data.id,
+            username: userResponse.data.username,
+            avatar: userResponse.data.avatar
+        }), { maxAge: 1000 * 60 * 60 * 24 * 7, httpOnly: false }); // 7 dias
+        res.redirect('/');
+    } catch (err) {
+        console.error("Erro OAuth:", err.message);
+        res.redirect('/?error=oauth_failed');
+    }
+});
+
+app.get('/api/auth/me', (req, res) => {
+    if (req.cookies.discordUser) {
+        res.json(JSON.parse(req.cookies.discordUser));
+    } else {
+        res.status(401).json({ error: 'Not logged in' });
+    }
+});
+
+app.get('/api/auth/logout', (req, res) => {
+    res.clearCookie('discordUser');
+    res.redirect('/');
+});
+
 app.post('/api/submit', async (req, res) => {
     const { type, data } = req.body;
+    
+    // Verificacao
+    let verifiedUser = data._discordUser ? `✅ Verificado: ${data._discordUser} (${data._discordId})` : `⚠️ Não Verificado`;
     const channelId = type === 'order' ? process.env.CHANNEL_ORDERS : 
                     type === 'video' ? process.env.CHANNEL_VIDEOS : 
                     type === 'gallery' ? process.env.CHANNEL_GALLERY : 
@@ -73,7 +132,13 @@ app.post('/api/submit', async (req, res) => {
 
     try {
         const channel = await client.channels.fetch(channelId);
-        const fields = Object.keys(data).map(key => ({ name: key, value: String(data[key]), inline: true }));
+        
+        const filteredData = { ...data };
+        delete filteredData._discordUser;
+        delete filteredData._discordId;
+        
+        const fields = Object.keys(filteredData).map(key => ({ name: key.toUpperCase(), value: String(filteredData[key]) || "Não informado", inline: true }));
+        fields.push({ name: 'STATUS LOGIN', value: verifiedUser, inline: false });
         const embed = new EmbedBuilder()
             .setTitle(`NOVA ENTRADA: ${type.toUpperCase()}`)
             .setColor(colors[type] || 0x00ff88)

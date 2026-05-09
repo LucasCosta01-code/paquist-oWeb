@@ -1,5 +1,36 @@
 const API_BASE = '/api';
 const MEMBER_ID_TARGET = '1492527673531171019';
+let currentUser = null;
+
+// Auth Check
+async function checkAuth() {
+    try {
+        const res = await fetch(`${API_BASE}/auth/me`);
+        if (res.ok) {
+            const user = await res.json();
+            if (user && user.id) {
+                currentUser = user;
+                document.getElementById('btnDiscordLogin').style.display = 'none';
+                const widget = document.getElementById('userWidget');
+                widget.classList.add('active');
+                document.getElementById('userName').textContent = user.username;
+                document.getElementById('userAvatar').src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+                
+                // Pre-fill forms
+                const dIds = document.querySelectorAll('input[name="discordId"], input[name="discord"]');
+                dIds.forEach(el => { el.value = user.username; el.readOnly = true; });
+                
+                const dNames = document.querySelectorAll('input[name="author"], input[name="nickname"]');
+                dNames.forEach(el => { el.value = user.username; });
+            }
+        }
+    } catch (e) { console.log('Not logged in'); }
+}
+checkAuth();
+
+function logout() {
+    window.location.href = `${API_BASE}/auth/logout`;
+}
 
 // Side-Panel Modal Functions
 const openModal = (id) => document.getElementById(id).classList.add('active');
@@ -178,6 +209,12 @@ async function submitData(type, payload, statusId) {
     const statusEl = document.getElementById(statusId);
     statusEl.textContent = "🚀 Enviando...";
     statusEl.style.color = "var(--primary-color)";
+    
+    // Inject auth data if available
+    if (currentUser) {
+        payload._discordUser = currentUser.username;
+        payload._discordId = currentUser.id;
+    }
 
     try {
         const res = await fetch(`${API_BASE}/submit`, {
@@ -189,6 +226,10 @@ async function submitData(type, payload, statusId) {
             statusEl.textContent = "✅ Sucesso! O bot processou seu pedido.";
             syncAll();
             return true;
+        } else {
+            const err = await res.json();
+            statusEl.textContent = `❌ Erro: ${err.error || 'Falha ao processar'}`;
+            return false;
         }
     } catch (e) {
         statusEl.textContent = "❌ Erro ao conectar com o servidor.";
