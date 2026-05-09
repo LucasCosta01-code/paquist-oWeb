@@ -34,7 +34,16 @@ function saveDB(data) {
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(__dirname)); 
+
+// Força HTTPS (Redirecionamento automático)
+app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] === 'http') {
+        return res.redirect(`https://${req.headers.host}${req.url}`);
+    }
+    next();
+});
+
+app.use(express.static(__dirname));
 
 // API Endpoints
 app.get('/api/gallery', (req, res) => res.json(getDB().gallery));
