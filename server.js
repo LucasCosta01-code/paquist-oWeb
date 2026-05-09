@@ -5,6 +5,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const bodyParser = require('body-parser');
+const helmet = require('helmet');
 
 console.log("-----------------------------------------");
 console.log("🚀 TROPA PAQUISTÃO - INICIANDO SISTEMA...");
@@ -32,15 +33,26 @@ function saveDB(data) {
 
 // Express Setup
 const app = express();
-app.set('trust proxy', true); // Essencial para Railway/Cloudflare
+app.set('trust proxy', 1); // Essencial para Railway/Cloudflare
+
+// Segurança básica e Headers (HSTS, etc)
+app.use(helmet({
+    contentSecurityPolicy: false, // Desabilitado para não bloquear imagens do Discord e YouTube
+    crossOriginEmbedderPolicy: false // Permite embeds como YouTube/TikTok
+}));
+
 app.use(cors());
 app.use(bodyParser.json());
 
-// Força HTTPS (Redirecionamento automático)
+// Força HTTPS (Redirecionamento automático e HSTS explícito caso helmet passe)
 app.use((req, res, next) => {
-    // Checa se o request veio via HTTP original (através do proxy)
+    // Adiciona header de segurança explícito (Helmet já faz isso, mas garantimos aqui)
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    
+    // Checa se o request veio via HTTP original (através do proxy da Railway)
     if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
-        return res.redirect(`https://${req.headers.host}${req.url}`);
+        // Usa redirect permanente (301) para SEO e forçar cache HTTPS
+        return res.redirect(301, `https://${req.headers.host}${req.url}`);
     }
     next();
 });
