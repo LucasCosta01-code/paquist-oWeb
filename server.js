@@ -387,33 +387,37 @@ let cachedMemberCount = 0;
 client.on('ready', async () => {
     console.log(`✅ BOT DISCORD LOGADO COMO: ${client.user.tag}`);
     
-    // Registra o comando /c_cargo
+    // Registra o comando /c_cargo como comando de GUILDA para ser instantâneo
     try {
-        await client.application.commands.create({
-            name: 'c_cargo',
-            description: 'Configura o cargo de suporte para tickets',
-            options: [
+        for (const [guildId, guild] of client.guilds.cache) {
+            await guild.commands.set([
                 {
-                    name: 'tipo',
-                    description: 'Qual sistema configurar?',
-                    type: 3, // STRING
-                    required: true,
-                    choices: [
-                        { name: 'Encomenda', value: 'encomenda' },
-                        { name: 'Recrutamento', value: 'recrutamento' }
+                    name: 'c_cargo',
+                    description: 'Configura o cargo de suporte para tickets',
+                    options: [
+                        {
+                            name: 'tipo',
+                            description: 'Qual sistema configurar?',
+                            type: 3, // STRING
+                            required: true,
+                            choices: [
+                                { name: 'Encomenda', value: 'encomenda' },
+                                { name: 'Recrutamento', value: 'recrutamento' }
+                            ]
+                        },
+                        {
+                            name: 'cargo',
+                            description: 'Arraste o cargo que poderá ver os tickets',
+                            type: 8, // ROLE
+                            required: true
+                        }
                     ]
-                },
-                {
-                    name: 'cargo',
-                    description: 'Arraste o cargo que poderá ver os tickets',
-                    type: 8, // ROLE
-                    required: true
                 }
-            ]
-        });
-        console.log("✅ Comando /c_cargo registrado com sucesso!");
+            ]);
+            console.log(`✅ Comando /c_cargo registrado instantaneamente na guilda: ${guild.name}`);
+        }
     } catch (e) {
-        console.error("❌ Erro ao registrar comando:", e);
+        console.error("❌ Erro ao registrar comando na guilda:", e);
     }
 
     console.log(`📡 Sincronizando o histórico completo do canal ${TARGET_CHANNEL_ID}...`);
