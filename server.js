@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, Partials } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
@@ -16,6 +16,7 @@ console.log("-----------------------------------------");
 // Database Setup
 const volumePath = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
 const DB_PATH = path.join(volumePath, 'database.json');
+const dbPath = path.join(volumePath, 'faccao.db');
 
 function getDB() {
 
@@ -92,9 +93,6 @@ app.get('/api/profile', async (req, res) => {
     }
     // ----------------------------------------
 
-    const volumePath = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
-    const dbPath = path.join(volumePath, 'faccao.db');
-    
     if (!fs.existsSync(dbPath)) {
         return res.json({ registered: false, discord: user, error: 'DB_NOT_FOUND' });
     }
@@ -287,49 +285,78 @@ app.post('/api/submit', async (req, res) => {
         const embed = new EmbedBuilder()
             .setTitle(`NOVA ENTRADA: ${type.toUpperCase()}`)
             .setColor(colors[type] || 0x00ff88)
-            .addFields(fields)
-            .setTimestamp();
+            .add        const mainMsg = await channel.send({ embeds: [embed] });
 
-        const mainMsg = await channel.send({ embeds: [embed] });
-
-        // --- SISTEMA DE TICKET PARA ENCOMENDAS ---
-        if (type === 'order' && data._discordId) {
+        // --- SISTEMA DE TICKET PARA ENCOMENDAS E RECRUTAMENTO ---
+        if ((type === 'order' || type === 'alistamento') && data._discordId) {
             const CATEGORY_ID = '1492506092633194616';
-            const SUPPORT_ROLES = ['1494537507310800928', '1494537726916169799', '1494537855739887758']; // IDs padrão (Fundador, Sub, Gerente Farm)
             
-            try {
-                const ticketChannel = await guild.channels.create({
-                    name: `📦-encomenda-${data._discordUser}`,
-                    type: 0, // GuildText
-                    parent: CATEGORY_ID,
-                    permissionOverwrites: [
-                        {
-                            id: guild.id, // @everyone
-                            deny: [8n], // ViewChannel is 1024n? No, Discord.js uses PermissionFlagsBits. 
-                        },
-                        {
-                            id: data._discordId,
-                            allow: [1024n, 2048n, 32768n, 65536n], // View, Send, AttachFiles, ReadHistory
-                        },
-                        ...SUPPORT_ROLES.map(roleId => ({
-                            id: roleId,
-                            allow: [1024n, 2048n, 32768n, 65536n],
-                        }))
-                    ],
-                });
+            // Busca cargos configurados no banco de dados
+            const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY);
+            db.get("SELECT valor FROM bot_config WHERE chave = ?", [type === 'order' ? 'role_ticket_encomenda' : 'role_ticket_recrutamento'], async (err, configRow) => {
+                db.close();
+                
+                let supportRoles = [];
+                if (configRow && configRow.valor) {
+                    supportRoles = configRow.valor.split(',').map(id => id.trim());
+                } else {
+                    // Defaults caso não esteja configurado
+                    supportRoles = type === 'order' ? ['1494537855739887758'] : ['1494537507310800928', '1494537726916169799'];
+                }
 
-                const ticketEmbed = new EmbedBuilder()
-                    .setTitle(`🛒 NOVO CHAT DE ENCOMENDA`)
-                    .setDescription(`Olá <@${data._discordId}>! Este é o seu canal exclusivo para tratar da sua encomenda.\n\n**Detalhes da Encomenda:**\n` + 
-                        Object.keys(filteredData).map(k => `**${k.toUpperCase()}:** ${filteredData[k]}`).join('\n'))
-                    .setColor(0xf39c12)
-                    .setFooter({ text: 'Aguarde o atendimento do time de suporte.' });
+                const prefix = type === 'order' ? '📦-encomenda' : '⚔️-recrutamento';
+                const embedTitle = type === 'order' ? '🛒 NOVO CHAT DE ENCOMENDA' : '⚔️ NOVO CHAT DE RECRUTAMENTO';
+                const embedColor = type === 'order' ? 0xf39c12 : 0x00ff88;
+                const welcomeText = type === 'order' ? 
+                    `Olá <@${data._discordId}>! Este é o seu canal exclusivo para tratar da sua encomenda.` :
+                    `Olá <@${data._discordId}>! Bem-vindo ao seu processo de recrutamento. Um responsável irá te atender em breve.`;
 
-                await ticketChannel.send({ content: `<@${data._discordId}> | <@&1494537855739887758>`, embeds: [ticketEmbed] });
-                console.log(`✅ Canal de ticket criado: ${ticketChannel.name}`);
-            } catch (err) {
-                console.error("❌ Erro ao criar canal de ticket:", err);
-            }
+                try {
+                    const ticketChannel = await guild.channels.create({
+                        name: `${prefix}-${data._discordUser}`,
+                        type: 0, // GuildText
+                        parent: CATEGORY_ID,
+                        permissionOverwrites: [
+                            {
+                                id: guild.id, // @everyone
+                                deny: [8n], // No View
+                            },
+                            {
+                                id: data._discordId,
+                                allow: [1024n, 2048n, 32768n, 65536n], // View, Send, AttachFiles, ReadHistory
+                            },
+                            ...supportRoles.map(roleId => ({
+                                id: roleId,
+                                allow: [1024n, 2048n, 32768n, 65536n],
+                            }))
+                        ],
+                    });
+
+                    const ticketEmbed = new EmbedBuilder()
+                        .setTitle(embedTitle)
+                        .setDescription(`${welcomeText}\n\n**Dados Enviados:**\n` + 
+                            Object.keys(filteredData).map(k => `**${k.toUpperCase()}:** ${filteredData[k]}`).join('\n'))
+                        .setColor(embedColor)
+                        .setTimestamp()
+                        .setFooter({ text: 'Tropa Paquistão - Sistema de Atendimento' });
+
+                    const tags = supportRoles.map(id => `<@&${id}>`).join(' | ');
+                
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setCustomId('btn_finalize_ticket')
+                                .setLabel('Finalizar Atendimento')
+                                .setStyle(ButtonStyle.Danger)
+                                .setEmoji('🔒')
+                        );
+
+                    await ticketChannel.send({ content: `<@${data._discordId}> | ${tags}`, embeds: [ticketEmbed], components: [row] });
+                    console.log(`✅ Canal de ticket criado (${type}): ${ticketChannel.name}`);
+                } catch (err) {
+                    console.error(`❌ Erro ao criar canal de ticket para ${type}:`, err);
+                }
+            });
         }
         // ------------------------------------------
 
@@ -355,7 +382,37 @@ const TARGET_ROLE_ID = '1492527673531171019';
 let cachedMemberCount = 0;
 
 client.on('ready', async () => {
-    console.log(`✅ BOT ONLINE: Logado como ${client.user.tag}`);
+    console.log(`✅ BOT DISCORD LOGADO COMO: ${client.user.tag}`);
+    
+    // Registra o comando /c_cargo
+    try {
+        await client.application.commands.create({
+            name: 'c_cargo',
+            description: 'Configura o cargo de suporte para tickets',
+            options: [
+                {
+                    name: 'tipo',
+                    description: 'Qual sistema configurar?',
+                    type: 3, // STRING
+                    required: true,
+                    choices: [
+                        { name: 'Encomenda', value: 'encomenda' },
+                        { name: 'Recrutamento', value: 'recrutamento' }
+                    ]
+                },
+                {
+                    name: 'cargo',
+                    description: 'Arraste o cargo que poderá ver os tickets',
+                    type: 8, // ROLE
+                    required: true
+                }
+            ]
+        });
+        console.log("✅ Comando /c_cargo registrado com sucesso!");
+    } catch (e) {
+        console.error("❌ Erro ao registrar comando:", e);
+    }
+
     console.log(`📡 Sincronizando o histórico completo do canal ${TARGET_CHANNEL_ID}...`);
 
     try {
@@ -375,7 +432,7 @@ client.on('ready', async () => {
         
         const messages = await channel.messages.fetch({ limit: 100 });
         
-        const db = { gallery: [], videos: [], news: [] };
+        const db_local = { gallery: [], videos: [], news: [] };
 
         messages.forEach(message => {
             if (message.author.bot) return;
@@ -553,6 +610,76 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
         const role = newMember.guild.roles.cache.get(TARGET_ROLE_ID);
         if (role) cachedMemberCount = role.members.size;
     } catch(e) {}
+});
+
+client.on('interactionCreate', async (interaction) => {
+    if (interaction.isChatInputCommand()) {
+        if (interaction.commandName === 'c_cargo') {
+            const ADMIN_ROLES = ['1494537507310800928', '1494537726916169799'];
+            if (!interaction.member.roles.cache.some(r => ADMIN_ROLES.includes(r.id))) {
+                return interaction.reply({ content: "❌ Você não tem permissão (Admin) para configurar cargos.", ephemeral: true });
+            }
+
+            const tipo = interaction.options.getString('tipo');
+            const role = interaction.options.getRole('cargo');
+            const chave = tipo === 'encomenda' ? 'role_ticket_encomenda' : 'role_ticket_recrutamento';
+
+            const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE);
+            db.run("INSERT OR REPLACE INTO bot_config (chave, valor) VALUES (?, ?)", [chave, role.id], function(err) {
+                db.close();
+                if (err) {
+                    console.error("Erro ao salvar config:", err);
+                    return interaction.reply({ content: "❌ Erro ao salvar configuração no banco de dados.", ephemeral: true });
+                }
+                interaction.reply({ content: `✅ Cargo para **${tipo}** configurado com sucesso: <@&${role.id}>`, ephemeral: true });
+            });
+        }
+    } else if (interaction.isButton()) {
+        if (interaction.customId === 'btn_finalize_ticket') {
+            const channel = interaction.channel;
+            const isRecrutamento = channel.name.includes('recrutamento');
+            const isEncomenda = channel.name.includes('encomenda');
+            const type = isRecrutamento ? 'recrutamento' : (isEncomenda ? 'encomenda' : null);
+
+            if (!type) return interaction.reply({ content: "❌ Este canal não é um ticket válido.", ephemeral: true });
+
+            // Busca cargo configurado no banco
+            const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY);
+            db.get("SELECT valor FROM bot_config WHERE chave = ?", [type === 'encomenda' ? 'role_ticket_encomenda' : 'role_ticket_recrutamento'], async (err, row) => {
+                db.close();
+                
+                const ADMIN_ROLES = ['1494537507310800928', '1494537726916169799'];
+                const allowedRoles = row ? [row.valor, ...ADMIN_ROLES] : [...ADMIN_ROLES];
+
+                if (!interaction.member.roles.cache.some(r => allowedRoles.includes(r.id))) {
+                    return interaction.reply({ content: "❌ Você não tem permissão para finalizar este atendimento.", ephemeral: true });
+                }
+
+                // --- LOG DE FINALIZAÇÃO ---
+                const LOG_CHANNEL_ID = '1502421274507612280';
+                try {
+                    const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
+                    const logEmbed = new EmbedBuilder()
+                        .setTitle('🔒 ATENDIMENTO FINALIZADO')
+                        .setColor(0xff3333)
+                        .addFields([
+                            { name: 'Tipo', value: type.toUpperCase(), inline: true },
+                            { name: 'Canal', value: `#${channel.name}`, inline: true },
+                            { name: 'Finalizado por', value: `<@${interaction.user.id}>`, inline: false }
+                        ])
+                        .setTimestamp()
+                        .setFooter({ text: 'Tropa Paquistão - Logs de Suporte' });
+
+                    await logChannel.send({ embeds: [logEmbed] });
+                } catch (e) {
+                    console.error("Erro ao enviar log:", e.message);
+                }
+
+                await interaction.reply({ content: "🔒 Finalizando atendimento e deletando canal em 5 segundos..." });
+                setTimeout(() => channel.delete().catch(e => console.log("Erro ao deletar canal:", e)), 5000);
+            });
+        }
+    }
 });
 
 const PORT = process.env.PORT || 3000;
