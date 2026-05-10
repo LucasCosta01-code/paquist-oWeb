@@ -275,6 +275,7 @@ app.post('/api/submit', async (req, res) => {
 
     try {
         const channel = await client.channels.fetch(channelId);
+        const guild = channel.guild;
         
         const filteredData = { ...data };
         delete filteredData._discordUser;
@@ -282,13 +283,56 @@ app.post('/api/submit', async (req, res) => {
         
         const fields = Object.keys(filteredData).map(key => ({ name: key.toUpperCase(), value: String(filteredData[key]) || "Não informado", inline: true }));
         fields.push({ name: 'STATUS LOGIN', value: verifiedUser, inline: false });
+        
         const embed = new EmbedBuilder()
             .setTitle(`NOVA ENTRADA: ${type.toUpperCase()}`)
             .setColor(colors[type] || 0x00ff88)
             .addFields(fields)
             .setTimestamp();
 
-        await channel.send({ embeds: [embed] });
+        const mainMsg = await channel.send({ embeds: [embed] });
+
+        // --- SISTEMA DE TICKET PARA ENCOMENDAS ---
+        if (type === 'order' && data._discordId) {
+            const CATEGORY_ID = '1492506092633194616';
+            const SUPPORT_ROLES = ['1494537507310800928', '1494537726916169799', '1494537855739887758']; // IDs padrão (Fundador, Sub, Gerente Farm)
+            
+            try {
+                const ticketChannel = await guild.channels.create({
+                    name: `📦-encomenda-${data._discordUser}`,
+                    type: 0, // GuildText
+                    parent: CATEGORY_ID,
+                    permissionOverwrites: [
+                        {
+                            id: guild.id, // @everyone
+                            deny: [8n], // ViewChannel is 1024n? No, Discord.js uses PermissionFlagsBits. 
+                        },
+                        {
+                            id: data._discordId,
+                            allow: [1024n, 2048n, 32768n, 65536n], // View, Send, AttachFiles, ReadHistory
+                        },
+                        ...SUPPORT_ROLES.map(roleId => ({
+                            id: roleId,
+                            allow: [1024n, 2048n, 32768n, 65536n],
+                        }))
+                    ],
+                });
+
+                const ticketEmbed = new EmbedBuilder()
+                    .setTitle(`🛒 NOVO CHAT DE ENCOMENDA`)
+                    .setDescription(`Olá <@${data._discordId}>! Este é o seu canal exclusivo para tratar da sua encomenda.\n\n**Detalhes da Encomenda:**\n` + 
+                        Object.keys(filteredData).map(k => `**${k.toUpperCase()}:** ${filteredData[k]}`).join('\n'))
+                    .setColor(0xf39c12)
+                    .setFooter({ text: 'Aguarde o atendimento do time de suporte.' });
+
+                await ticketChannel.send({ content: `<@${data._discordId}> | <@&1494537855739887758>`, embeds: [ticketEmbed] });
+                console.log(`✅ Canal de ticket criado: ${ticketChannel.name}`);
+            } catch (err) {
+                console.error("❌ Erro ao criar canal de ticket:", err);
+            }
+        }
+        // ------------------------------------------
+
         res.json({ success: true });
     } catch (error) {
         console.error("❌ Erro ao enviar formulário para o Discord:", error);
