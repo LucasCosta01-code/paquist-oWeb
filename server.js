@@ -285,7 +285,10 @@ app.post('/api/submit', async (req, res) => {
         const embed = new EmbedBuilder()
             .setTitle(`NOVA ENTRADA: ${type.toUpperCase()}`)
             .setColor(colors[type] || 0x00ff88)
-            .add        const mainMsg = await channel.send({ embeds: [embed] });
+            .addFields(fields)
+            .setTimestamp();
+
+        const mainMsg = await channel.send({ embeds: [embed] });
 
         // --- SISTEMA DE TICKET PARA ENCOMENDAS E RECRUTAMENTO ---
         if ((type === 'order' || type === 'alistamento') && data._discordId) {
@@ -432,7 +435,7 @@ client.on('ready', async () => {
         
         const messages = await channel.messages.fetch({ limit: 100 });
         
-        const db_local = { gallery: [], videos: [], news: [] };
+        const db = getDB();
 
         messages.forEach(message => {
             if (message.author.bot) return;
