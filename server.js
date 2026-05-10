@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } = require('discord.js');
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
@@ -659,6 +659,27 @@ client.on('interactionCreate', async (interaction) => {
                 const LOG_CHANNEL_ID = '1502421274507612280';
                 try {
                     const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
+                    
+                    // --- GERAÇÃO DE HISTÓRICO (TRANSCRIPT) ---
+                    const messages = await channel.messages.fetch({ limit: 100 });
+                    let transcript = `HISTÓRICO DO TICKET: ${channel.name}\n`;
+                    transcript += `FINALIZADO POR: ${interaction.user.tag}\n`;
+                    transcript += `DATA: ${new Date().toLocaleString('pt-BR')}\n`;
+                    transcript += `------------------------------------------\n\n`;
+
+                    const sortedMessages = messages.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+                    sortedMessages.forEach(msg => {
+                        const time = new Date(msg.createdTimestamp).toLocaleString('pt-BR');
+                        transcript += `[${time}] ${msg.author.tag}: ${msg.content}\n`;
+                        if (msg.attachments.size > 0) {
+                            msg.attachments.forEach(att => transcript += `[ANEXO]: ${att.url}\n`);
+                        }
+                    });
+
+                    const buffer = Buffer.from(transcript, 'utf-8');
+                    const attachment = new AttachmentBuilder(buffer, { name: `transcript-${channel.name}.txt` });
+                    // ------------------------------------------
+
                     const logEmbed = new EmbedBuilder()
                         .setTitle('🔒 ATENDIMENTO FINALIZADO')
                         .setColor(0xff3333)
@@ -670,7 +691,7 @@ client.on('interactionCreate', async (interaction) => {
                         .setTimestamp()
                         .setFooter({ text: 'Tropa Paquistão - Logs de Suporte' });
 
-                    await logChannel.send({ embeds: [logEmbed] });
+                    await logChannel.send({ embeds: [logEmbed], files: [attachment] });
                 } catch (e) {
                     console.error("Erro ao enviar log:", e.message);
                 }
