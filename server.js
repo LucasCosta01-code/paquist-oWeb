@@ -279,11 +279,28 @@ app.post('/api/submit', async (req, res) => {
         delete filteredData._discordUser;
         delete filteredData._discordId;
         
-        const fields = Object.keys(filteredData).map(key => ({ name: key.toUpperCase(), value: String(filteredData[key]) || "Não informado", inline: true }));
+        const TRANSLATIONS = {
+            nickname: 'Nickname (IG)',
+            discordId: 'ID do Discord',
+            age: 'Idade',
+            motivation: 'Motivação',
+            product: 'Produto',
+            quantity: 'Quantidade',
+            discord: 'Discord de Contato',
+            author: 'Autor',
+            type: 'Tipo',
+            content: 'Conteúdo'
+        };
+
+        const fields = Object.keys(filteredData).map(key => ({ 
+            name: (TRANSLATIONS[key] || key).toUpperCase(), 
+            value: String(filteredData[key]) || "Não informado", 
+            inline: true 
+        }));
         fields.push({ name: 'STATUS LOGIN', value: verifiedUser, inline: false });
         
         const embed = new EmbedBuilder()
-            .setTitle(`NOVA ENTRADA: ${type.toUpperCase()}`)
+            .setTitle(`NOVA ENTRADA: ${type === 'order' ? 'ENCOMENDA' : type === 'alistamento' ? 'RECRUTAMENTO' : type.toUpperCase()}`)
             .setColor(colors[type] || 0x00ff88)
             .addFields(fields)
             .setTimestamp();
@@ -338,13 +355,13 @@ app.post('/api/submit', async (req, res) => {
                     const ticketEmbed = new EmbedBuilder()
                         .setTitle(embedTitle)
                         .setDescription(`${welcomeText}\n\n**Dados Enviados:**\n` + 
-                            Object.keys(filteredData).map(k => `**${k.toUpperCase()}:** ${filteredData[k]}`).join('\n'))
+                            Object.keys(filteredData).map(k => `**${(TRANSLATIONS[k] || k).toUpperCase()}:** ${filteredData[k]}`).join('\n'))
                         .setColor(embedColor)
                         .setTimestamp()
                         .setFooter({ text: 'Tropa Paquistão - Sistema de Atendimento' });
 
                     const tags = supportRoles.map(id => `<@&${id}>`).join(' | ');
-                
+                    
                     const row = new ActionRowBuilder()
                         .addComponents(
                             new ButtonBuilder()
