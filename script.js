@@ -186,10 +186,20 @@ const openModal = (id) => document.getElementById(id).classList.add('active');
 const closeModal = (id) => document.getElementById(id).classList.remove('active');
 
 // Event Listeners for Modals
-document.getElementById("openModal").onclick = () => openModal("registerModal");
-document.getElementById("openOrderModal").onclick = () => openModal("orderModal");
-document.getElementById("openVideoModal").onclick = () => openModal("videoModal");
-document.getElementById("openGalleryPostModal").onclick = () => openModal("galleryPostModal");
+// Event Listeners with Auth Protection
+function protectedOpenModal(id) {
+    if (!currentUser) {
+        alert("🔒 ACESSO RESTRITO: Você precisa VINCULAR SEU DISCORD primeiro para fazer pedidos ou recrutamento!");
+        document.getElementById('btnDiscordLogin').click(); // Tenta abrir o login
+        return;
+    }
+    openModal(id);
+}
+
+document.getElementById("openModal").onclick = () => protectedOpenModal("registerModal");
+document.getElementById("openOrderModal").onclick = () => protectedOpenModal("orderModal");
+document.getElementById("openVideoModal").onclick = () => protectedOpenModal("videoModal");
+document.getElementById("openGalleryPostModal").onclick = () => protectedOpenModal("galleryPostModal");
 
 // Close panel when clicking outside
 window.onclick = (e) => { 

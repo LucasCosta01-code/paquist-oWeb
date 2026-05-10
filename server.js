@@ -440,6 +440,34 @@ client.on('ready', async () => {
                             required: false
                         }
                     ]
+                },
+                {
+                    name: 'config_meta',
+                    description: 'Configura a meta semanal da facção',
+                    options: [
+                        {
+                            name: 'tipo',
+                            description: 'Tipo de meta (ex: plastico, c4, farm)',
+                            type: 3, // STRING
+                            required: true
+                        },
+                        {
+                            name: 'quantidade',
+                            description: 'Quantidade alvo da meta',
+                            type: 4, // INTEGER
+                            required: true
+                        },
+                        {
+                            name: 'modo',
+                            description: 'Modo de validação',
+                            type: 3, // STRING
+                            required: false,
+                            choices: [
+                                { name: 'OU (Apenas uma condição)', value: 'ou' },
+                                { name: 'E (Todas as condições)', value: 'e' }
+                            ]
+                        }
+                    ]
                 }
             ]);
             console.log(`✅ Comando /c_cargo atualizado na guilda: ${guild.name}`);
@@ -683,6 +711,32 @@ client.on('interactionCreate', async (interaction) => {
                     
                     const lista = currentRoles.length > 0 ? currentRoles.map(id => `<@&${id}>`).join(', ') : 'Nenhum cargo configurado';
                     interaction.reply({ content: `✅ Cargos para **${tipo}** atualizados!\n**Cargos Atuais:** ${lista}`, ephemeral: true });
+                });
+            });
+        } else if (interaction.commandName === 'config_meta') {
+            const ADMIN_ROLES = ['1494537507310800928', '1494537726916169799'];
+            if (!interaction.member.roles.cache.some(r => ADMIN_ROLES.includes(r.id))) {
+                return interaction.reply({ content: "❌ Você não tem permissão (Admin) para configurar metas.", ephemeral: true });
+            }
+
+            const tipo = interaction.options.getString('tipo').toLowerCase();
+            const quantidade = interaction.options.getInteger('quantidade');
+            const modo = interaction.options.getString('modo');
+
+            const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE);
+            
+            // Salva a meta do tipo específico
+            db.serialize(() => {
+                db.run("INSERT OR REPLACE INTO bot_config (chave, valor) VALUES (?, ?)", [`meta_${tipo}`, quantidade.toString()]);
+                
+                if (modo) {
+                    db.run("INSERT OR REPLACE INTO bot_config (chave, valor) VALUES (?, ?)", ["modo_meta", modo]);
+                }
+                
+                db.close();
+                interaction.reply({ 
+                    content: `✅ Meta de **${tipo.toUpperCase()}** configurada para **${quantidade}**!\n${modo ? `**Modo de Validação:** ${modo.toUpperCase()}` : ''}`, 
+                    ephemeral: true 
                 });
             });
         }
