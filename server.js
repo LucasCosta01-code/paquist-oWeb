@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, Partials, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder, PermissionFlagsBits } = require('discord.js');
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
@@ -339,15 +339,15 @@ app.post('/api/submit', async (req, res) => {
                         permissionOverwrites: [
                             {
                                 id: guild.id, // @everyone
-                                deny: [8n], // No View
+                                deny: [PermissionFlagsBits.ViewChannel], 
                             },
                             {
                                 id: data._discordId,
-                                allow: [1024n, 2048n, 32768n, 65536n], // View, Send, AttachFiles, ReadHistory
+                                allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.AttachFiles, PermissionFlagsBits.ReadMessageHistory],
                             },
                             ...supportRoles.map(roleId => ({
                                 id: roleId,
-                                allow: [1024n, 2048n, 32768n, 65536n],
+                                allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.AttachFiles, PermissionFlagsBits.ReadMessageHistory],
                             }))
                         ],
                     });
@@ -410,7 +410,7 @@ client.on('ready', async () => {
             await guild.commands.set([
                 {
                     name: 'c_cargo',
-                    description: 'Configura o cargo de suporte para tickets',
+                    description: 'Gerencia os cargos de suporte para tickets',
                     options: [
                         {
                             name: 'tipo',
@@ -423,15 +423,26 @@ client.on('ready', async () => {
                             ]
                         },
                         {
+                            name: 'acao',
+                            description: 'O que deseja fazer?',
+                            type: 3, // STRING
+                            required: true,
+                            choices: [
+                                { name: 'Adicionar Cargo', value: 'add' },
+                                { name: 'Remover Cargo', value: 'rem' },
+                                { name: 'Limpar Todos', value: 'clear' }
+                            ]
+                        },
+                        {
                             name: 'cargo',
-                            description: 'Arraste o cargo que poderá ver os tickets',
+                            description: 'Selecione o cargo (opcional para limpar)',
                             type: 8, // ROLE
-                            required: true
+                            required: false
                         }
                     ]
                 }
             ]);
-            console.log(`✅ Comando /c_cargo registrado instantaneamente na guilda: ${guild.name}`);
+            console.log(`✅ Comando /c_cargo atualizado na guilda: ${guild.name}`);
         }
     } catch (e) {
         console.error("❌ Erro ao registrar comando na guilda:", e);
@@ -645,17 +656,34 @@ client.on('interactionCreate', async (interaction) => {
             }
 
             const tipo = interaction.options.getString('tipo');
+            const acao = interaction.options.getString('acao');
             const role = interaction.options.getRole('cargo');
             const chave = tipo === 'encomenda' ? 'role_ticket_encomenda' : 'role_ticket_recrutamento';
 
             const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE);
-            db.run("INSERT OR REPLACE INTO bot_config (chave, valor) VALUES (?, ?)", [chave, role.id], function(err) {
-                db.close();
-                if (err) {
-                    console.error("Erro ao salvar config:", err);
-                    return interaction.reply({ content: "❌ Erro ao salvar configuração no banco de dados.", ephemeral: true });
+            
+            db.get("SELECT valor FROM bot_config WHERE chave = ?", [chave], (err, row) => {
+                let currentRoles = row && row.valor ? row.valor.split(',').filter(id => id.trim() !== '') : [];
+                
+                if (acao === 'clear') {
+                    currentRoles = [];
+                } else if (acao === 'add' && role) {
+                    if (!currentRoles.includes(role.id)) currentRoles.push(role.id);
+                } else if (acao === 'rem' && role) {
+                    currentRoles = currentRoles.filter(id => id !== role.id);
+                } else if (!role && acao !== 'clear') {
+                    db.close();
+                    return interaction.reply({ content: "❌ Você precisa selecionar um cargo para esta ação.", ephemeral: true });
                 }
-                interaction.reply({ content: `✅ Cargo para **${tipo}** configurado com sucesso: <@&${role.id}>`, ephemeral: true });
+
+                const newValue = currentRoles.join(',');
+                db.run("INSERT OR REPLACE INTO bot_config (chave, valor) VALUES (?, ?)", [chave, newValue], function(err) {
+                    db.close();
+                    if (err) return interaction.reply({ content: "❌ Erro ao salvar no banco.", ephemeral: true });
+                    
+                    const lista = currentRoles.length > 0 ? currentRoles.map(id => `<@&${id}>`).join(', ') : 'Nenhum cargo configurado';
+                    interaction.reply({ content: `✅ Cargos para **${tipo}** atualizados!\n**Cargos Atuais:** ${lista}`, ephemeral: true });
+                });
             });
         }
     } else if (interaction.isButton()) {
