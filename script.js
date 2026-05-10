@@ -1,14 +1,23 @@
 const API_BASE = '/api';
 const MEMBER_ID_TARGET = '1492527673531171019';
 
+// Custom Alert Function
+function showCustomAlert(title, message, icon = 'fa-exclamation-triangle') {
+    document.getElementById('alertTitle').textContent = title;
+    document.getElementById('alertMessage').textContent = message;
+    const iconEl = document.getElementById('alertIcon');
+    iconEl.className = `fas ${icon}`;
+    openModal('alertModal');
+}
+
 // Tratar erros de Login
 window.onload = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('error') === 'not_in_faction') {
-        alert("⚠️ ACESSO NEGADO: Você precisa estar no Servidor do Discord da Tropa Paquistão para fazer login no site!");
+        showCustomAlert("ACESSO NEGADO", "Você precisa estar no Servidor do Discord da Tropa Paquistão para fazer login no site!", "fa-user-slash");
         window.history.replaceState({}, document.title, "/");
     } else if (params.get('error') === 'bot_not_ready') {
-        alert("⚠️ ERRO: O sistema do bot ainda está conectando. Tente novamente em alguns segundos.");
+        showCustomAlert("SISTEMA OFFLINE", "O sistema do bot ainda está conectando. Tente novamente em alguns segundos.", "fa-robot");
         window.history.replaceState({}, document.title, "/");
     }
 };
@@ -189,8 +198,8 @@ const closeModal = (id) => document.getElementById(id).classList.remove('active'
 // Event Listeners with Auth Protection
 function protectedOpenModal(id) {
     if (!currentUser) {
-        alert("🔒 ACESSO RESTRITO: Você precisa VINCULAR SEU DISCORD primeiro para fazer pedidos ou recrutamento!");
-        document.getElementById('btnDiscordLogin').click(); // Tenta abrir o login
+        showCustomAlert("ACESSO RESTRITO", "Você precisa VINCULAR SEU DISCORD primeiro para fazer pedidos ou recrutamento!", "fa-user-lock");
+        document.getElementById('btnDiscordLogin').classList.add('glow-pulse'); // Adiciona um efeito visual no botão de login
         return;
     }
     openModal(id);
