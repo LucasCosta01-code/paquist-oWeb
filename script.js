@@ -456,8 +456,36 @@ syncAll();
 setInterval(syncAll, 5000);
 
 
-// Smooth Scroll
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+// Mobile Menu Toggle
+const menuToggle = document.getElementById('mobile-menu');
+const navContainer = document.querySelector('.nav-container');
+
+if (menuToggle && navContainer) {
+    menuToggle.onclick = () => {
+        menuToggle.classList.toggle('active');
+        navContainer.classList.toggle('active');
+        document.body.style.overflow = navContainer.classList.contains('active') ? 'hidden' : 'auto';
+    };
+
+    // Close menu when clicking links
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.onclick = (e) => {
+            menuToggle.classList.remove('active');
+            navContainer.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Smooth scroll logic (already exists below, but we handle the menu close here)
+            const target = document.querySelector(link.getAttribute('href'));
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        };
+    });
+}
+
+// Smooth Scroll (Updated to exclude links already handled above)
+document.querySelectorAll('a[href^="#"]:not(.nav-links a)').forEach(anchor => {
     anchor.onclick = (e) => {
         e.preventDefault();
         const target = document.querySelector(anchor.getAttribute('href'));

@@ -21,28 +21,38 @@
         <a href="#inicio" class="logo-link">
             <img src="/icon.webp" alt="Logo Paquistão" class="logo-img">
         </a>
-        <ul class="nav-links">
-            <li><a href="#inicio">INÍCIO</a></li>
-            <li><a href="#historia">HISTÓRIA</a></li>
-            <li><a href="#noticias">NOTÍCIAS</a></li>
-            <li><a href="#galeria">GALERIA</a></li>
-            <li><a href="#videos">VÍDEOS</a></li>
-        </ul>
-        <div class="nav-actions">
-            <!-- Botão de Login Discord -->
-            <button class="btn-discord" id="btnDiscordLogin" onclick="window.location.href='/api/auth/discord'">
-                <i class="fab fa-discord"></i> VINCULAR DISCORD
-            </button>
-            
-            <!-- Widget do Usuário Logado (Oculto por padrão) -->
-            <div class="user-widget" id="userWidget">
-                <img src="" alt="Avatar" id="userAvatar" class="user-avatar">
-                <span class="user-name" id="userName">Usuário</span>
-                <i class="fas fa-sign-out-alt" style="color: #ff3333; cursor:pointer;" onclick="logout()" title="Sair"></i>
-            </div>
 
-            <button class="btn-encomenda" id="openOrderModal"><i class="fas fa-box"></i> ENCOMENDA</button>
-            <button class="btn-alistar" id="openModal">ALISTAR</button>
+        <!-- Hamburger Icon -->
+        <div class="menu-toggle" id="mobile-menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+
+        <div class="nav-container">
+            <ul class="nav-links">
+                <li><a href="#inicio">INÍCIO</a></li>
+                <li><a href="#historia">HISTÓRIA</a></li>
+                <li><a href="#noticias">NOTÍCIAS</a></li>
+                <li><a href="#galeria">GALERIA</a></li>
+                <li><a href="#videos">VÍDEOS</a></li>
+            </ul>
+            <div class="nav-actions">
+                <!-- Botão de Login Discord -->
+                <button class="btn-discord" id="btnDiscordLogin" onclick="window.location.href='/api/auth/discord'">
+                    <i class="fab fa-discord"></i> VINCULAR DISCORD
+                </button>
+                
+                <!-- Widget do Usuário Logado (Oculto por padrão) -->
+                <div class="user-widget" id="userWidget">
+                    <img src="" alt="Avatar" id="userAvatar" class="user-avatar">
+                    <span class="user-name" id="userName">Usuário</span>
+                    <i class="fas fa-sign-out-alt" style="color: #ff3333; cursor:pointer;" onclick="logout()" title="Sair"></i>
+                </div>
+
+                <button class="btn-encomenda" id="openOrderModal"><i class="fas fa-box"></i> ENCOMENDA</button>
+                <button class="btn-alistar" id="openModal">ALISTAR</button>
+            </div>
         </div>
     </nav>
 
