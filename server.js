@@ -204,6 +204,27 @@ app.get('/api/auth/callback', async (req, res) => {
         }
         // --------------------------------------------------
 
+        // --- AUTOMAÇÃO DE CARGO NO LOGIN ---
+        try {
+            const guild = client.guilds.cache.get(factionGuildId);
+            if (guild) {
+                const member = await guild.members.fetch(userResponse.data.id);
+                const ID_AUTO_ROLE = '1503209192096530492';
+                const ID_VINCULADO = '1503224093703540736';
+
+                if (member.roles.cache.has(ID_AUTO_ROLE)) {
+                    await member.roles.remove(ID_AUTO_ROLE);
+                }
+                if (!member.roles.cache.has(ID_VINCULADO)) {
+                    await member.roles.add(ID_VINCULADO);
+                }
+                console.log(`✅ [LOGIN-CARGO] ${userResponse.data.username} recebeu cargo de vinculado.`);
+            }
+        } catch (e) {
+            console.error("❌ Erro ao atribuir cargo no login:", e.message);
+        }
+        // ------------------------------------
+
         // Salva dados no cookie
         res.cookie('discordUser', JSON.stringify({
             id: userResponse.data.id,
@@ -391,6 +412,7 @@ app.post('/api/submit', async (req, res) => {
                         const ID_RECRUTADO = '1503210991461335140';
                         const ID_VISITANTE = '1497655589365350522';
                         const ID_AUTO_ROLE  = '1503209192096530492'; // Aguardando Vínculo
+                        const ID_VINCULADO  = '1503224093703540736'; // Vinculado
 
                         const targetRole = type === 'alistamento' ? ID_RECRUTADO : ID_VISITANTE;
                         
@@ -400,6 +422,11 @@ app.post('/api/submit', async (req, res) => {
                         // Remove o cargo de "Não Vinculado" se o membro possuir
                         if (member.roles.cache.has(ID_AUTO_ROLE)) {
                             await member.roles.remove(ID_AUTO_ROLE);
+                        }
+                        
+                        // Adiciona o cargo de vinculado
+                        if (!member.roles.cache.has(ID_VINCULADO)) {
+                            await member.roles.add(ID_VINCULADO);
                         }
 
                         const label = type === 'alistamento' ? 'RECRUTADO' : 'VISITANTE';

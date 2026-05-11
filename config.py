@@ -18,6 +18,7 @@ CANAL_AVISOS_ID        = 1496283836529770508                           # Canal o
 CARGO_AUTO_ROLE_ID     = 1503209192096530492                           # Cargo automático (Não vinculado)
 CARGO_VISITANTE_ID     = 1497655589365350522                           # Cargo Visitante
 CARGO_RECRUTAMENTO_ID  = 1503210991461335140                           # Cargo Recrutamento
+CARGO_VINCULADO_ID     = 1503224093703540736                           # Cargo Vinculado
 
 # ─── IDs DOS CARGOS DA FACÇÃO ──────────────────────────────────────────────────
 CARGO_FUNDADOR_ID       = 1494537507310800928

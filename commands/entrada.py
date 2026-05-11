@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import database as db
 from config import (
     COR_PRINCIPAL, COR_SUCESSO, COR_ERRO, 
-    CARGO_AUTO_ROLE_ID, CARGO_VISITANTE_ID, CARGO_RECRUTAMENTO_ID
+    CARGO_AUTO_ROLE_ID, CARGO_VISITANTE_ID, CARGO_RECRUTAMENTO_ID, CARGO_VINCULADO_ID
 )
 
 class EntradaView(discord.ui.View):
@@ -28,6 +28,7 @@ class EntradaView(discord.ui.View):
         member = interaction.user
         cargo_visitante = interaction.guild.get_role(CARGO_VISITANTE_ID)
         cargo_vincular = interaction.guild.get_role(CARGO_AUTO_ROLE_ID)
+        cargo_vinculado = interaction.guild.get_role(CARGO_VINCULADO_ID)
 
         if not cargo_visitante:
             return await interaction.response.send_message("❌ Erro: Cargo de Visitante não encontrado.", ephemeral=True)
@@ -46,7 +47,11 @@ class EntradaView(discord.ui.View):
         if is_linked:
             if cargo_vincular and cargo_vincular in member.roles:
                 await member.remove_roles(cargo_vincular, reason="Membro vinculado acessou como visitante")
-            embed.add_field(name="✨ Status de Vínculo", value="Detectamos que você está **Vinculado**! O cargo de espera foi removido.", inline=False)
+            
+            if cargo_vinculado and cargo_vinculado not in member.roles:
+                await member.add_roles(cargo_vinculado, reason="Membro vinculado acessou como visitante")
+                
+            embed.add_field(name="✨ Status de Vínculo", value="Detectamos que você está **Vinculado**! O cargo de espera foi removido e você recebeu o cargo de vinculado.", inline=False)
         else:
             embed.add_field(name="⚠️ Status de Vínculo", value="Você ainda **não vinculou** seu Discord no site. Por segurança, você manterá o cargo de 'Aguardando Vínculo' até realizar o procedimento.", inline=False)
 
@@ -64,6 +69,7 @@ class EntradaView(discord.ui.View):
         member = interaction.user
         cargo_recrutamento = interaction.guild.get_role(CARGO_RECRUTAMENTO_ID)
         cargo_vincular = interaction.guild.get_role(CARGO_AUTO_ROLE_ID)
+        cargo_vinculado = interaction.guild.get_role(CARGO_VINCULADO_ID)
 
         if not cargo_recrutamento:
             return await interaction.response.send_message("❌ Erro: Cargo de Recrutamento não encontrado.", ephemeral=True)
@@ -91,6 +97,9 @@ class EntradaView(discord.ui.View):
         
         if cargo_vincular and cargo_vincular in member.roles:
             await member.remove_roles(cargo_vincular, reason="Membro vinculado acessou recrutamento")
+            
+        if cargo_vinculado and cargo_vinculado not in member.roles:
+            await member.add_roles(cargo_vinculado, reason="Membro vinculado acessou recrutamento")
 
         embed = discord.Embed(
             title="⚔️  Iniciando Recrutamento",
@@ -136,14 +145,19 @@ class Entrada(commands.Cog):
                     continue
 
                 is_linked = db.get_membro(str(member.id)) is not None
+                cargo_vinculado = guild.get_role(CARGO_VINCULADO_ID)
                 
                 try:
                     if is_linked:
-                        if cargo_vincular in member.roles:
+                        if cargo_vincular and cargo_vincular in member.roles:
                             await member.remove_roles(cargo_vincular, reason="Varredura: Membro vinculado")
+                        if cargo_vinculado and cargo_vinculado not in member.roles:
+                            await member.add_roles(cargo_vinculado, reason="Varredura: Membro vinculado")
                     else:
-                        if cargo_vincular not in member.roles:
+                        if cargo_vincular and cargo_vincular not in member.roles:
                             await member.add_roles(cargo_vincular, reason="Varredura: Membro não vinculado")
+                        if cargo_vinculado and cargo_vinculado in member.roles:
+                            await member.remove_roles(cargo_vinculado, reason="Varredura: Membro não vinculado")
                 except Exception:
                     continue
 
