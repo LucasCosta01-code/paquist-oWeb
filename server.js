@@ -378,6 +378,42 @@ app.post('/api/submit', async (req, res) => {
                 }
             });
         }
+        // --- AUTOMAÇÃO DE CARGO PARA MEMBROS VINCULADOS ---
+        if ((type === 'alistamento' || type === 'order') && data._discordId) {
+            const dbMembros = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY);
+            dbMembros.get("SELECT * FROM membros WHERE discord_id = ?", [data._discordId], async (err, row) => {
+                dbMembros.close();
+                if (row) {
+                    try {
+                        const member = await guild.members.fetch(data._discordId);
+                        
+                        // IDs passados pelo usuário
+                        const ID_RECRUTADO = '1503210991461335140';
+                        const ID_VISITANTE = '1497655589365350522';
+                        const ID_AUTO_ROLE  = '1503209192096530492'; // Aguardando Vínculo
+
+                        const targetRole = type === 'alistamento' ? ID_RECRUTADO : ID_VISITANTE;
+                        
+                        // Atribui o cargo correspondente ao formulário
+                        await member.roles.add(targetRole);
+
+                        // Remove o cargo de "Não Vinculado" se o membro possuir
+                        if (member.roles.cache.has(ID_AUTO_ROLE)) {
+                            await member.roles.remove(ID_AUTO_ROLE);
+                        }
+
+                        const label = type === 'alistamento' ? 'RECRUTADO' : 'VISITANTE';
+                        console.log(`✅ [AUTO-CARGO] ${data._discordUser} identificado como vinculado. Cargo aplicado: ${label}`);
+                        
+                        // Notifica no canal onde o formulário chegou
+                        const channel = await client.channels.fetch(channelId);
+                        channel.send(`✨ **AUTOMAÇÃO:** <@${data._discordId}> já possui vínculo e recebeu o cargo de **${label}** automaticamente.`);
+                    } catch (e) {
+                        console.error("❌ Erro ao processar automação de cargo:", e.message);
+                    }
+                }
+            });
+        }
         // ------------------------------------------
 
         res.json({ success: true });

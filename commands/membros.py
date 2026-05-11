@@ -155,6 +155,78 @@ class Membros(commands.Cog):
 
         await interaction.response.send_message(embed=embed)
 
+    # ─── /listar_vinculados ────────────────────────────────────────────────────
+    @app_commands.command(name="listar_vinculados", description="🔍 Lista todos os membros da facção e seu status de vínculo com o site.")
+    async def listar_vinculados(self, interaction: discord.Interaction):
+        """Lista membros com o cargo de meta e mostra quem está vinculado ao site."""
+        if not checks.is_lideranca(interaction):
+            return await checks.sem_permissao(interaction)
+
+        await interaction.response.defer(thinking=True)
+
+        from config import CARGO_OBRIGADO_META_ID
+        guild = interaction.guild
+        role = guild.get_role(CARGO_OBRIGADO_META_ID)
+
+        if not role:
+            return await interaction.followup.send("❌ Cargo de membro (Meta) não encontrado configurado.")
+
+        vinculados = []
+        nao_vinculados = []
+
+        # Garante que temos todos os membros em cache
+        if guild.chunked is False:
+            await guild.chunk()
+
+        for member in role.members:
+            if member.bot:
+                continue
+            
+            # Verifica no banco de dados se o ID existe
+            dados = db.get_membro(str(member.id))
+            if dados:
+                vinculados.append(member)
+            else:
+                nao_vinculados.append(member)
+
+        embed = discord.Embed(
+            title="🔍 Status de Vínculo │ Membros da Facção",
+            description=(
+                f"**Resumo do Cargo:** {role.mention}\n"
+                f"📊 **Total no Cargo:** `{len(role.members)}` membros\n"
+                f"🔗 **Vinculados:** `{len(vinculados)}`  |  ⚠️ **Não Vinculados:** `{len(nao_vinculados)}`"
+            ),
+            color=COR_PRINCIPAL,
+            timestamp=datetime.utcnow()
+        )
+
+        def formatar_lista_vinc(membros_lista, status_icon, limite=25):
+            if not membros_lista:
+                return "_Nenhum membro nesta categoria._"
+            
+            linhas = [f"{status_icon} `{m.display_name}`" for m in membros_lista[:limite]]
+            texto = "\n".join(linhas)
+            if len(membros_lista) > limite:
+                texto += f"\n_... e mais {len(membros_lista) - limite} membros_"
+            return texto
+
+        embed.add_field(
+            name=f"✅  VINCULADOS AO SITE ({len(vinculados)})",
+            value=formatar_lista_vinc(vinculados, "🟢"),
+            inline=False
+        )
+
+        embed.add_field(
+            name=f"❌  NÃO VINCULADOS ({len(nao_vinculados)})",
+            value=formatar_lista_vinc(nao_vinculados, "🔴"),
+            inline=False
+        )
+
+        embed.set_footer(text="⚔️ Paquistão Web • Sistema de Vínculo Automático")
+        embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
+
+        await interaction.followup.send(embed=embed)
+
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
         """Notifica quando um membro da facção sai do servidor e o remove do banco."""
