@@ -139,15 +139,14 @@ class BatePontoView(discord.ui.View):
         if canal_log:
             embed_log = discord.Embed(
                 title="🟢  Ponto Aberto",
-                description="─────────────────────────────",
+                description=f"{'─' * 42}",
                 color=0x2ECC71
             )
             embed_log.add_field(name="👤  Membro", value=f"{member.mention}\n`{member.display_name}`", inline=True)
             embed_log.add_field(name="⏰  Entrada", value=f"```{data_formatada}```", inline=True)
             embed_log.add_field(name="🏷️  Cargo", value=f"```🟢 Em Serviço```", inline=True)
-            embed_log.add_field(name="📊  Status", value="```🟢 EM SERVIÇO```", inline=False)
             embed_log.set_thumbnail(url=member.display_avatar.url)
-            embed_log.set_footer(text="⚔️ Sistema de Bate-Ponto • Log de Entrada")
+            embed_log.set_footer(text="⚔️ Paquistão Web • Log de Entrada")
             embed_log.timestamp = datetime.utcnow()
             await canal_log.send(embed=embed_log)
 
@@ -214,17 +213,16 @@ class BatePontoView(discord.ui.View):
         if canal_log:
             embed_log = discord.Embed(
                 title="🔴  Ponto Fechado",
-                description="─────────────────────────────",
+                description=f"{'─' * 42}",
                 color=0xE74C3C
             )
             embed_log.add_field(name="👤  Membro", value=f"{member.mention}\n`{member.display_name}`", inline=True)
             embed_log.add_field(name="⏰  Entrada", value=f"```{data_entrada}```", inline=True)
             embed_log.add_field(name="⏰  Saída", value=f"```{data_saida}```", inline=True)
-            embed_log.add_field(name="⏱️  Tempo de Serviço", value=f"```{duracao_formatada}```", inline=False)
+            embed_log.add_field(name="⏱️  Tempo", value=f"```{duracao_formatada}```", inline=False)
             embed_log.add_field(name="🏷️  Cargo", value=f"```🔴 Fora de Serviço```", inline=True)
-            embed_log.add_field(name="📊  Status", value="```🔴 FORA DE SERVIÇO```", inline=True)
             embed_log.set_thumbnail(url=member.display_avatar.url)
-            embed_log.set_footer(text="⚔️ Sistema de Bate-Ponto • Log de Saída")
+            embed_log.set_footer(text="⚔️ Paquistão Web • Log de Saída")
             embed_log.timestamp = datetime.utcnow()
             await canal_log.send(embed=embed_log)
 
@@ -375,22 +373,22 @@ class BatePonto(commands.Cog):
         embed = discord.Embed(
             title="⚔️  SISTEMA DE BATE-PONTO",
             description=(
-                "─────────────────────────────\n\n"
+                f"{'─' * 30}\n\n"
                 "**Registre sua entrada e saída de serviço.**\n"
                 "O sistema calcula automaticamente seu tempo\n"
                 "e gerencia seus cargos de serviço.\n\n"
-                "─────────────────────────────\n\n"
+                f"{'─' * 30}\n\n"
                 "🟢 **Bater Ponto** → Entrada + Cargo **Em Serviço**\n"
                 "🔴 **Parar Ponto** → Saída + Cargo **Fora de Serviço**\n"
                 "📊 **Meu Histórico** → Seus últimos registros\n\n"
-                "─────────────────────────────\n\n"
+                f"{'─' * 30}\n\n"
                 f"🏷️ **Em Serviço:** <@&{CARGO_EM_SERVICO_ID}>\n"
                 f"🏷️ **Fora de Serviço:** <@&{CARGO_FORA_SERVICO_ID}>\n\n"
                 "⚠️ *Lembre-se de parar o ponto ao encerrar!*"
             ),
             color=0x2ECC71  # Verde
         )
-        embed.set_footer(text="⚔️ Facção Bot • Sistema de Bate-Ponto")
+        embed.set_footer(text="⚔️ Paquistão Web • Sistema de Bate-Ponto")
         embed.timestamp = datetime.utcnow()
         return embed
 
