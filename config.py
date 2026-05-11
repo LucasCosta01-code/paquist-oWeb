@@ -15,6 +15,9 @@ LOG_CHANNEL_ID         = int(os.getenv("LOG_CHANNEL_ID", 0))          # Canal de
 LOG_CANAL_SERVIDOR_ID  = 1491542110166323341   # Canal de logs do servidor (tudo)
 META_FARM_SEMANAL      = int(os.getenv("META_FARM_SEMANAL", 50))      # Meta padrão de farm semanal
 CANAL_AVISOS_ID        = 1496283836529770508                           # Canal oficial de avisos da facção
+CARGO_AUTO_ROLE_ID     = 1503209192096530492                           # Cargo automático (Não vinculado)
+CARGO_VISITANTE_ID     = 1497655589365350522                           # Cargo Visitante
+CARGO_RECRUTAMENTO_ID  = 1503210991461335140                           # Cargo Recrutamento
 
 # ─── IDs DOS CARGOS DA FACÇÃO ──────────────────────────────────────────────────
 CARGO_FUNDADOR_ID       = 1494537507310800928

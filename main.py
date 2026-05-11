@@ -63,6 +63,7 @@ class FaccaoBot(commands.Bot):
             "commands.registro",         # ← Sistema de Registro (Recrutado/Visitante)
             "commands.tickets",          # ← Sistema de Tickets
             "commands.anti_link",        # ← Proteção contra links
+            "commands.entrada",          # ← Seleção de cargos (Visitante/Recrutamento)
         ]
 
         for cog in cogs:

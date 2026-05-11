@@ -34,7 +34,7 @@ import discord
 from discord.ext import commands
 from datetime import datetime, timezone
 
-from config import LOG_CANAL_SERVIDOR_ID
+from config import LOG_CANAL_SERVIDOR_ID, CARGO_AUTO_ROLE_ID
 
 
 # ─── CORES POR CATEGORIA ───────────────────────────────────────────────────────
@@ -95,6 +95,16 @@ class LogsServidor(commands.Cog):
         e.add_field(name="🏷️ Nome completo",  value=str(member),                         inline=True)
         e.add_field(name="📅 Conta criada",   value=conta_criada,                        inline=True)
         e.add_field(name="👥 Total membros",  value=str(member.guild.member_count),       inline=True)
+
+        # Adiciona o cargo automático
+        try:
+            cargo = member.guild.get_role(CARGO_AUTO_ROLE_ID)
+            if cargo:
+                await member.add_roles(cargo, reason="Auto-Role automático ao entrar")
+                e.add_field(name="🏷️ Cargo automático", value=f"{cargo.mention}", inline=True)
+        except Exception:
+            pass
+
         await self._enviar(e)
 
     @commands.Cog.listener()
