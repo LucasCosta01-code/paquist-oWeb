@@ -216,8 +216,8 @@ app.get('/api/auth/callback', async (req, res) => {
         // --- REGISTRA VÍNCULO NO BANCO DE DADOS (100% AUTOMÁTICO) ---
         const sqlite3 = require('sqlite3').verbose();
         const dbVinc = new sqlite3.Database(dbPath);
-        dbVinc.run("INSERT OR REPLACE INTO vinculos (discord_id, data_vinculo) VALUES (?, ?)", 
-            [userData.id, new Date().toISOString()], (err) => {
+        dbVinc.run("INSERT OR REPLACE INTO vinculos (discord_id, access_token, data_vinculo) VALUES (?, ?, ?)", 
+            [userData.id, accessToken, new Date().toISOString()], (err) => {
                 if (err) console.error("❌ Erro ao registrar vínculo no banco:", err.message);
                 else console.log(`✅ [VÍNCULO] ${userData.username} (${userData.id}) vinculado via site.`);
                 dbVinc.close();

@@ -155,9 +155,15 @@ def criar_tabelas():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS vinculos (
             discord_id TEXT PRIMARY KEY,
+            access_token TEXT,
             data_vinculo TEXT NOT NULL
         )
     """)
+    # Tenta adicionar a coluna access_token caso a tabela já existisse
+    try:
+        cursor.execute("ALTER TABLE vinculos ADD COLUMN access_token TEXT")
+    except:
+        pass
 
     # ── Sistema de Tickets ────────────────────────────────────────────────────
     cursor.execute("""
@@ -218,15 +224,22 @@ def criar_tabelas():
 #  FUNÇÕES DE VÍNCULO (SITE)
 # ═══════════════════════════════════════════════════════════════════
 
-def registrar_vinculo(discord_id: str):
+def registrar_vinculo(discord_id: str, access_token: str = None):
     """Registra ou atualiza o vínculo de um usuário que logou no site."""
     from datetime import datetime
     conn = get_connection()
     data = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     conn.execute(
-        "INSERT OR REPLACE INTO vinculos (discord_id, data_vinculo) VALUES (?, ?)",
-        (discord_id, data)
+        "INSERT OR REPLACE INTO vinculos (discord_id, access_token, data_vinculo) VALUES (?, ?, ?)",
+        (discord_id, access_token, data)
     )
+    conn.commit()
+    conn.close()
+
+def remover_vinculo(discord_id: str):
+    """Remove o vínculo de um usuário."""
+    conn = get_connection()
+    conn.execute("DELETE FROM vinculos WHERE discord_id = ?", (discord_id,))
     conn.commit()
     conn.close()
 

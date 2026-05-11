@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 from datetime import datetime, timezone
+import aiohttp
 import database as db
 from config import (
     COR_PRINCIPAL, COR_SUCESSO, COR_ERRO, 
@@ -142,20 +143,40 @@ class Entrada(commands.Cog):
                 if any(role.id in [1494537507310800928, 1494537726916169799] for role in member.roles):
                     continue
 
-                # Verifica vínculo EXCLUSIVAMENTE no site (Discord API OAuth2)
-                is_linked = db.get_vinculo(str(member.id)) is not None
+                # Verifica vínculo no site (Discord API OAuth2)
+                vinc_data = db.get_vinculo(str(member.id))
+                is_linked = False
+                
+                if vinc_data:
+                    # Tenta verificar se o token ainda é válido
+                    token = vinc_data["access_token"]
+                    if token:
+                        async with aiohttp.ClientSession() as session:
+                            async with session.get('https://discord.com/api/users/@me', headers={'Authorization': f'Bearer {token}'}) as resp:
+                                if resp.status == 200:
+                                    is_linked = True
+                                elif resp.status == 401:
+                                    # Token expirado ou desautorizado! Remove do banco
+                                    db.remover_vinculo(str(member.id))
+                                    is_linked = False
+                                else:
+                                    # Outro erro (API fora, etc), mantém o status atual por segurança
+                                    is_linked = True
+                    else:
+                        # Se não tem token (vínculos antigos), considera vinculado mas não consegue checar expiração
+                        is_linked = True
                 
                 try:
                     if is_linked:
                         # VINCULADO: Deve ter o cargo de Vínculo e NÃO o de Aguardando
                         if cargo_vinculado and cargo_vinculado not in member.roles:
-                            await member.add_roles(cargo_vinculado, reason="Automação: Vínculo detectado")
+                            await member.add_roles(cargo_vinculado, reason="Automação: Vínculo ativo")
                         if cargo_vincular and cargo_vincular in member.roles:
                             await member.remove_roles(cargo_vincular, reason="Automação: Removendo aguardando vínculo")
                     else:
                         # NÃO VINCULADO: Deve ter o cargo de Aguardando e NÃO o de Vínculo
                         if cargo_vinculado and cargo_vinculado in member.roles:
-                            await member.remove_roles(cargo_vinculado, reason="Automação: Removendo cargo de vínculo (não autenticado)")
+                            await member.remove_roles(cargo_vinculado, reason="Automação: Vínculo removido ou inexistente")
                         if cargo_vincular and cargo_vincular not in member.roles:
                             await member.add_roles(cargo_vincular, reason="Automação: Adicionando aguardando vínculo")
                 except Exception as e:
