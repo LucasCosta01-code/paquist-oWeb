@@ -14,7 +14,13 @@ class EntradaView(discord.ui.View):
         self.bot = bot
 
     async def check_link(self, interaction: discord.Interaction):
-        """Verifica se o usuário está vinculado no banco de dados."""
+        """Verifica se o usuário está vinculado no banco de dados (Site ou Faction Member)."""
+        # Verifica primeiro se vinculou no site (OAuth2)
+        vinc = db.get_vinculo(str(interaction.user.id))
+        if vinc:
+            return True
+            
+        # Fallback: verifica se é membro registrado na facção
         membro = db.get_membro(str(interaction.user.id))
         return membro is not None
 
@@ -28,7 +34,6 @@ class EntradaView(discord.ui.View):
         member = interaction.user
         cargo_visitante = interaction.guild.get_role(CARGO_VISITANTE_ID)
         cargo_vincular = interaction.guild.get_role(CARGO_AUTO_ROLE_ID)
-        cargo_vinculado = interaction.guild.get_role(CARGO_VINCULADO_ID)
 
         if not cargo_visitante:
             return await interaction.response.send_message("❌ Erro: Cargo de Visitante não encontrado.", ephemeral=True)
@@ -47,11 +52,7 @@ class EntradaView(discord.ui.View):
         if is_linked:
             if cargo_vincular and cargo_vincular in member.roles:
                 await member.remove_roles(cargo_vincular, reason="Membro vinculado acessou como visitante")
-            
-            if cargo_vinculado and cargo_vinculado not in member.roles:
-                await member.add_roles(cargo_vinculado, reason="Membro vinculado acessou como visitante")
-                
-            embed.add_field(name="✨ Status de Vínculo", value="Detectamos que você está **Vinculado**! O cargo de espera foi removido e você recebeu o cargo de vinculado.", inline=False)
+            embed.add_field(name="✨ Status de Vínculo", value="Detectamos que você está **Vinculado**! O cargo de espera foi removido.", inline=False)
         else:
             embed.add_field(name="⚠️ Status de Vínculo", value="Você ainda **não vinculou** seu Discord no site. Por segurança, você manterá o cargo de 'Aguardando Vínculo' até realizar o procedimento.", inline=False)
 
@@ -69,7 +70,6 @@ class EntradaView(discord.ui.View):
         member = interaction.user
         cargo_recrutamento = interaction.guild.get_role(CARGO_RECRUTAMENTO_ID)
         cargo_vincular = interaction.guild.get_role(CARGO_AUTO_ROLE_ID)
-        cargo_vinculado = interaction.guild.get_role(CARGO_VINCULADO_ID)
 
         if not cargo_recrutamento:
             return await interaction.response.send_message("❌ Erro: Cargo de Recrutamento não encontrado.", ephemeral=True)
@@ -97,9 +97,6 @@ class EntradaView(discord.ui.View):
         
         if cargo_vincular and cargo_vincular in member.roles:
             await member.remove_roles(cargo_vincular, reason="Membro vinculado acessou recrutamento")
-            
-        if cargo_vinculado and cargo_vinculado not in member.roles:
-            await member.add_roles(cargo_vinculado, reason="Membro vinculado acessou recrutamento")
 
         embed = discord.Embed(
             title="⚔️  Iniciando Recrutamento",
@@ -133,7 +130,8 @@ class Entrada(commands.Cog):
         """Verifica todos os membros do servidor para ajustar o cargo de vínculo automaticamente (Real-time)."""
         for guild in self.bot.guilds:
             cargo_vincular = guild.get_role(CARGO_AUTO_ROLE_ID)
-            if not cargo_vincular:
+            cargo_vinculado = guild.get_role(CARGO_VINCULADO_ID)
+            if not cargo_vincular and not cargo_vinculado:
                 continue
 
             for member in guild.members:
@@ -144,20 +142,22 @@ class Entrada(commands.Cog):
                 if any(role.id in [1494537507310800928, 1494537726916169799] for role in member.roles):
                     continue
 
-                is_linked = db.get_membro(str(member.id)) is not None
-                cargo_vinculado = guild.get_role(CARGO_VINCULADO_ID)
+                # Verifica vínculo no site ou na facção
+                is_linked = (db.get_vinculo(str(member.id)) is not None) or (db.get_membro(str(member.id)) is not None)
                 
                 try:
                     if is_linked:
-                        if cargo_vincular and cargo_vincular in member.roles:
-                            await member.remove_roles(cargo_vincular, reason="Varredura: Membro vinculado")
+                        # Se está vinculado: Ganha cargo VINCULADO e Perde cargo AGUARDANDO
                         if cargo_vinculado and cargo_vinculado not in member.roles:
-                            await member.add_roles(cargo_vinculado, reason="Varredura: Membro vinculado")
+                            await member.add_roles(cargo_vinculado, reason="Varredura: Membro vinculado no site")
+                        if cargo_vincular and cargo_vincular in member.roles:
+                            await member.remove_roles(cargo_vincular, reason="Varredura: Membro vinculado no site")
                     else:
-                        if cargo_vincular and cargo_vincular not in member.roles:
-                            await member.add_roles(cargo_vincular, reason="Varredura: Membro não vinculado")
+                        # Se não está vinculado: Perde cargo VINCULADO e Ganha cargo AGUARDANDO
                         if cargo_vinculado and cargo_vinculado in member.roles:
                             await member.remove_roles(cargo_vinculado, reason="Varredura: Membro não vinculado")
+                        if cargo_vincular and cargo_vincular not in member.roles:
+                            await member.add_roles(cargo_vincular, reason="Varredura: Membro não vinculado")
                 except Exception:
                     continue
 

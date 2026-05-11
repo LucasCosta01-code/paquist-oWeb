@@ -204,33 +204,26 @@ app.get('/api/auth/callback', async (req, res) => {
         }
         // --------------------------------------------------
 
-        // --- AUTOMAÇÃO DE CARGO NO LOGIN ---
-        try {
-            const guild = client.guilds.cache.get(factionGuildId);
-            if (guild) {
-                const member = await guild.members.fetch(userResponse.data.id);
-                const ID_AUTO_ROLE = '1503209192096530492';
-                const ID_VINCULADO = '1503224093703540736';
-
-                if (member.roles.cache.has(ID_AUTO_ROLE)) {
-                    await member.roles.remove(ID_AUTO_ROLE);
-                }
-                if (!member.roles.cache.has(ID_VINCULADO)) {
-                    await member.roles.add(ID_VINCULADO);
-                }
-                console.log(`✅ [LOGIN-CARGO] ${userResponse.data.username} recebeu cargo de vinculado.`);
-            }
-        } catch (e) {
-            console.error("❌ Erro ao atribuir cargo no login:", e.message);
-        }
-        // ------------------------------------
-
         // Salva dados no cookie
-        res.cookie('discordUser', JSON.stringify({
+        const userData = {
             id: userResponse.data.id,
             username: userResponse.data.username,
             avatar: userResponse.data.avatar
-        }), { maxAge: 1000 * 60 * 60 * 24 * 7, httpOnly: false }); // 7 dias
+        };
+
+        res.cookie('discordUser', JSON.stringify(userData), { maxAge: 1000 * 60 * 60 * 24 * 7, httpOnly: false }); // 7 dias
+
+        // --- REGISTRA VÍNCULO NO BANCO DE DADOS (100% AUTOMÁTICO) ---
+        const sqlite3 = require('sqlite3').verbose();
+        const dbVinc = new sqlite3.Database(dbPath);
+        dbVinc.run("INSERT OR REPLACE INTO vinculos (discord_id, data_vinculo) VALUES (?, ?)", 
+            [userData.id, new Date().toISOString()], (err) => {
+                if (err) console.error("❌ Erro ao registrar vínculo no banco:", err.message);
+                else console.log(`✅ [VÍNCULO] ${userData.username} (${userData.id}) vinculado via site.`);
+                dbVinc.close();
+            }
+        );
+        // -----------------------------------------------------------
         res.redirect('/');
     } catch (err) {
         console.error("Erro OAuth:", err.message);
@@ -412,7 +405,6 @@ app.post('/api/submit', async (req, res) => {
                         const ID_RECRUTADO = '1503210991461335140';
                         const ID_VISITANTE = '1497655589365350522';
                         const ID_AUTO_ROLE  = '1503209192096530492'; // Aguardando Vínculo
-                        const ID_VINCULADO  = '1503224093703540736'; // Vinculado
 
                         const targetRole = type === 'alistamento' ? ID_RECRUTADO : ID_VISITANTE;
                         
@@ -422,11 +414,6 @@ app.post('/api/submit', async (req, res) => {
                         // Remove o cargo de "Não Vinculado" se o membro possuir
                         if (member.roles.cache.has(ID_AUTO_ROLE)) {
                             await member.roles.remove(ID_AUTO_ROLE);
-                        }
-                        
-                        // Adiciona o cargo de vinculado
-                        if (!member.roles.cache.has(ID_VINCULADO)) {
-                            await member.roles.add(ID_VINCULADO);
                         }
 
                         const label = type === 'alistamento' ? 'RECRUTADO' : 'VISITANTE';

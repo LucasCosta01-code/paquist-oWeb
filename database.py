@@ -151,6 +151,14 @@ def criar_tabelas():
         )
     """)
 
+    # ── Vínculos do Site (Discord API OAuth2) ──────────────────────────────
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS vinculos (
+            discord_id TEXT PRIMARY KEY,
+            data_vinculo TEXT NOT NULL
+        )
+    """)
+
     # ── Sistema de Tickets ────────────────────────────────────────────────────
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS ticket_paineis (
@@ -205,6 +213,28 @@ def criar_tabelas():
     print("[DB] Tabelas criadas/verificadas com sucesso.")
 
 
+
+# ═══════════════════════════════════════════════════════════════════
+#  FUNÇÕES DE VÍNCULO (SITE)
+# ═══════════════════════════════════════════════════════════════════
+
+def registrar_vinculo(discord_id: str):
+    """Registra ou atualiza o vínculo de um usuário que logou no site."""
+    conn = get_connection()
+    data = sqlite3.connect(DATABASE_PATH).execute("SELECT datetime('now')").fetchone()[0]
+    conn.execute(
+        "INSERT OR REPLACE INTO vinculos (discord_id, data_vinculo) VALUES (?, ?)",
+        (discord_id, data)
+    )
+    conn.commit()
+    conn.close()
+
+def get_vinculo(discord_id: str):
+    """Verifica se o usuário possui vínculo registrado no site."""
+    conn = get_connection()
+    row = conn.execute("SELECT * FROM vinculos WHERE discord_id = ?", (discord_id,)).fetchone()
+    conn.close()
+    return row
 
 # ═══════════════════════════════════════════════════════════════════
 #  FUNÇÕES DE MEMBROS
