@@ -134,31 +134,38 @@ class Entrada(commands.Cog):
             if not cargo_vincular and not cargo_vinculado:
                 continue
 
-            for member in guild.members:
+            # Garante que temos todos os membros (fetch caso o cache esteja incompleto)
+            try:
+                membros = await guild.fetch_members(limit=None).flatten()
+            except:
+                membros = guild.members
+
+            for member in membros:
                 if member.bot:
                     continue
                 
-                # Ignora cargos de liderança
+                # Ignora cargos de liderança (Fundador e Sub-Fundador)
                 if any(role.id in [1494537507310800928, 1494537726916169799] for role in member.roles):
                     continue
 
-                # Verifica vínculo no site ou na facção
+                # Verifica vínculo no site (OAuth2) ou na facção (Registro manual)
                 is_linked = (db.get_vinculo(str(member.id)) is not None) or (db.get_membro(str(member.id)) is not None)
                 
                 try:
                     if is_linked:
-                        # Se está vinculado: Ganha cargo VINCULADO e Perde cargo AGUARDANDO
+                        # VINCULADO: Deve ter o cargo de Vínculo e NÃO o de Aguardando
                         if cargo_vinculado and cargo_vinculado not in member.roles:
-                            await member.add_roles(cargo_vinculado, reason="Varredura: Membro vinculado no site")
+                            await member.add_roles(cargo_vinculado, reason="Automação: Vínculo detectado")
                         if cargo_vincular and cargo_vincular in member.roles:
-                            await member.remove_roles(cargo_vincular, reason="Varredura: Membro vinculado no site")
+                            await member.remove_roles(cargo_vincular, reason="Automação: Removendo aguardando vínculo")
                     else:
-                        # Se não está vinculado: Perde cargo VINCULADO e Ganha cargo AGUARDANDO
+                        # NÃO VINCULADO: Deve ter o cargo de Aguardando e NÃO o de Vínculo
                         if cargo_vinculado and cargo_vinculado in member.roles:
-                            await member.remove_roles(cargo_vinculado, reason="Varredura: Membro não vinculado")
+                            await member.remove_roles(cargo_vinculado, reason="Automação: Removendo cargo de vínculo (não autenticado)")
                         if cargo_vincular and cargo_vincular not in member.roles:
-                            await member.add_roles(cargo_vincular, reason="Varredura: Membro não vinculado")
-                except Exception:
+                            await member.add_roles(cargo_vincular, reason="Automação: Adicionando aguardando vínculo")
+                except Exception as e:
+                    print(f"❌ Erro ao ajustar cargo de {member.display_name}: {e}")
                     continue
 
     @app_commands.command(name="varredura_vinculos", description="🔍 Força uma verificação de vínculo em todos os membros agora.")

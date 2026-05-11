@@ -220,8 +220,9 @@ def criar_tabelas():
 
 def registrar_vinculo(discord_id: str):
     """Registra ou atualiza o vínculo de um usuário que logou no site."""
+    from datetime import datetime
     conn = get_connection()
-    data = sqlite3.connect(DATABASE_PATH).execute("SELECT datetime('now')").fetchone()[0]
+    data = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     conn.execute(
         "INSERT OR REPLACE INTO vinculos (discord_id, data_vinculo) VALUES (?, ?)",
         (discord_id, data)
