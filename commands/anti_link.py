@@ -14,8 +14,12 @@ import checks
 import utils
 from config import CARGO_FUNDADOR_ID, COR_ERRO, COR_SUCESSO
 
-# Regex para detectar links (http, https, www)
-LINK_REGEX = re.compile(r"(https?://[^\s]+|www\.[^\s]+)", re.IGNORECASE)
+# Regex aprimorada para detectar links mesmo sem http:// ou www.
+# Captura domínios comuns e subdomínios (ex: discordapp.com, discord.gg, site.com.br)
+LINK_REGEX = re.compile(
+    r"(?:https?://)?(?:www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(/[^\s]*)?", 
+    re.IGNORECASE
+)
 
 class AntiLink(commands.Cog):
     """Cog responsável por bloquear e limpar links do servidor."""
