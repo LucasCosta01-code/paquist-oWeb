@@ -141,10 +141,6 @@ class Entrada(commands.Cog):
                 if member.bot:
                     continue
                 
-                # Ignora cargos de liderança (Fundador e Sub-Fundador)
-                if any(role.id in [1494537507310800928, 1494537726916169799] for role in member.roles):
-                    continue
-
                 # Verifica vínculo no site (Discord API OAuth2)
                 vinc_data = db.get_vinculo(str(member.id))
                 is_linked = False

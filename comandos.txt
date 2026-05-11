@@ -1,215 +1,78 @@
-══════════════════════════════════════════════════════════════
-   ⚔️  FACÇÃO BOT — MANUAL COMPLETO DE COMANDOS  ⚔️
-══════════════════════════════════════════════════════════════
+📋 LISTA DE COMANDOS DO BOT - PAQUISTÃO
 
-Este arquivo contém TODOS os comandos disponíveis no bot, organizados por sistema.
-Use-os com sabedoria para manter a organização da facção.
+--- 🗄️ MEMBROS E VÍNCULO ---
+/painel_entrada      - Envia o painel de seleção de cargos para novos membros.
+/varredura_vinculos  - Força uma verificação de vínculo em todos os membros agora (Site/API).
+/registrar_membro    - Registra um novo membro na facção.
+/remover_membro      - Remove um membro da facção.
+/perfil_membro       - Exibe o perfil completo de um membro.
+/listar_vinculados   - Lista todos os membros e seu status de vínculo com o site.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🎫 SISTEMA DE TICKETS (ESTILO PREMIUM)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--- 📦 METAS E ENTREGAS ---
+/registrar_meta      - Registra entrega de C4 ou Plásticos.
+/editar_meta         - Edita o total de entregas de um membro.
+/meta                - Mostra quem bateu e quem não bateu a meta.
+/verificar_metas     - Verifica todos e atribui cargos de meta.
+/parabenizar_metas   - Parabeniza todos que bateram a meta.
+/punir_inativos      - Pune membros que não bateram a meta.
+/add_punicao         - Adiciona punição manual a um membro.
+/remover_punicao     - Remove a última punição de um membro.
+/ver_punicoes        - Mostra punições de um membro.
+/resetar_metas       - Reseta todas as entregas (novo período).
+/config_meta         - Configura a meta semanal de um item.
+/metas_ativas        - Mostra quais são as metas ativas da facção.
+/modo_meta           - Define se a meta é UM (ou) ou TODOS (e) os itens.
+/lembrete_meta       - Envia um lembrete sobre as metas.
+/entregar_c4         - Registra entrega de C4 de um membro.
 
-/ticket_admin
-  → PAINEL DE CONTROLE: Gerencie textos, cores, banners e modo de menu (Botões ou Dropdown).
-  → Permissão: Liderança
+--- 🚜 FARM ---
+/adicionar_farm      - Adiciona farm a um membro da facção.
+/remover_farm        - Remove farm de um membro.
+/ranking_farm        - Exibe o ranking de farm semanal.
+/ver_meta            - Verifica se um membro bateu a meta de farm.
+/relatorio_farm      - Gera um relatório geral de farm da facção.
+/punir_meta          - Aplica punição a membro que não bateu a meta de farm.
 
-/ticket_setup
-  → Envia o painel de atendimento configurado no canal atual.
-  → Canal Oficial Sugerido: <#1495006449942794300>
-  → Permissão: Liderança
+--- 🛡️ MODERAÇÃO E PUNIÇÕES ---
+/advertir            - Aplica uma advertência a um membro.
+/radvertir           - Remove a última advertência de um membro.
+/punir               - Registra uma punição para um membro.
+/silenciar           - Silencia um membro por um tempo determinado.
+/dessilenciar        - Remove o silêncio de um membro.
+/expulsar            - Expulsa um membro do servidor.
+/banir               - Bane um membro do servidor.
+/desbanir            - Remove o ban de um usuário.
+/r                   - Remove o cargo de um membro e avisa a facção (Expulsão).
+/up                  - Promove um membro (novo cargo + motivo).
+/rup                 - Rebaixa um membro (remove cargo e dá novo).
 
-/ticket_fechar_admin [canal]
-  → Fecha e deleta um canal de ticket forçadamente pelo ADM.
-  → Permissão: Liderança
+--- 🎫 TICKETS E MONITORIA ---
+/setup_tickets       - Envia o painel de abertura de tickets.
+/abrir_monitoria     - Abre uma conversa na DM com um membro.
+/fechar_monitoria    - Fecha/Arquiva o tópico de monitoria atual.
 
-/ticket_add_opcao [nome] [categoria_id] [cargo_ids] [emoji] [descricao]
-  → Adiciona uma categoria de atendimento ao sistema.
-  → Permissão: Liderança
+--- 📊 RELATÓRIOS E STATUS ---
+/relatorio_geral     - Relatório completo da facção com metas e membros.
+/resetar_semana      - Reseta o farm semanal e as metas da semana.
+/destaques           - Mostra o top 3 membros exemplares.
+/inativos            - Mostra membros sem ponto, farm ou metas.
+/status              - Mostra o status atual do bot e do sistema.
 
-/ticket_del_opcao
-  → Remove uma categoria de atendimento via menu interativo.
-  → Permissão: Liderança
+--- 📅 REUNIÕES ---
+/marcar_reuniao      - Marca uma nova reunião da facção.
+/confirmar_presenca  - Registra a presença de um membro em uma reunião.
+/justificar_ausencia - Solicita justificativa de ausência.
+/aprovar_ausencia    - Aprova solicitação de ausência.
+/recusar_ausencia    - Recusa solicitação de ausência.
 
-/ticket_editar
-  → Abre formulário para editar o visual do painel rapidamente.
-  → Permissão: Liderança
+--- ✅ VERIFICAÇÃO EM MASSA ---
+/verm                - Mostra membros COM e SEM o cargo alvo.
+/verificar_cargo     - Escaneia e atribui o cargo automaticamente para todos.
+/add_adm             - Concede permissão de ADM de verificação a um cargo.
+/remove_adm          - Remove permissão de ADM.
 
-/ticket_listar
-  → Mostra o resumo da configuração atual dos tickets.
-  → Permissão: Liderança
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📦 SISTEMA DE METAS & HIERARQUIA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-/v
-  → Sincroniza o servidor: lista membros e limpa inativos do banco.
-  → Permissão: Liderança
-
-/registrar_meta [membro] [tipo] [quantidade]
-  → Registra entrega de C4 ou Plásticos para um membro.
-  → Permissão: Liderança + Farm
-
-/meta
-  → Consulta o status das metas (quem bateu e quem falta).
-  → Permissão: Todos
-
-/verificar_metas
-  → Escaneia membros e atualiza cargos de meta automaticamente.
-  → Permissão: Liderança
-
-/punir_inativos
-  → Aplica punição automática em quem não bateu a meta.
-  → Permissão: Liderança
-
-/add_punicao [membro] [motivo]
-  → Adiciona uma punição manual ao histórico do membro.
-  → Permissão: Liderança
-
-/ver_punicoes [membro]
-  → Consulta o histórico de punições de um membro.
-  → Permissão: Liderança
-
-/r [membro] [motivo]
-  → Remove membro da facção (remove cargos e avisa geral).
-  → Permissão: Liderança
-
-/up [membro] [novo_cargo] [motivo]
-  → Promove um membro na hierarquia.
-  → Permissão: Liderança
-
-/rup [membro] [cargo_rem] [cargo_add] [motivo]
-  → Rebaixa um membro na hierarquia.
-  → Permissão: Liderança
-
-/config_meta [tipo] [valor]
-  → Define o valor da meta semanal.
-  → Permissão: Liderança
-
-/modo_meta [modo]
-  → Alterna entre modo 'OU' (um item bate) ou 'E' (todos os itens).
-  → Permissão: Liderança
-
-/resetar_metas
-  → Zera todas as contagens para o início da semana.
-  → Permissão: Fundadores
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ⏱️ BATE-PONTO & AUDITORIA DE VOZ
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-/painel_ponto
-  → Envia o painel interativo de entrada/saída de serviço.
-  → Canal Oficial: <#1501560241643589762>
-  → Permissão: Liderança
-
-/abrir_ponto_admin [membro] [motivo]
-  → Inicia forçadamente o ponto de um membro.
-  → Permissão: Liderança
-
-/parar_ponto_admin [membro] [motivo]
-  → Encerra forçadamente o ponto de um membro.
-  → Permissão: Liderança
-
-/ranking_ponto
-  → Ranking de quem mais trabalhou na semana.
-  → Permissão: Todos
-
-/historico_ponto [membro]
-  → Veja todos os registros de entrada/saída detalhados.
-  → Permissão: Liderança
-
-/config_auditoria
-  → Configura a verificação automática de quem está fora da call.
-  → Permissão: Liderança
-
-/verificar_call
-  → Lista todos na sua call e o status do ponto de cada um.
-  → Permissão: Liderança
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🌾 SISTEMA DE FARM
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-/adicionar_farm [membro] [qtd] [tipo]
-  → Registra farm de itens coletados.
-  → Permissão: Farm + Liderança
-
-/remover_farm [membro] [qtd] [motivo]
-  → Remove farm registrado por erro ou punição.
-  → Permissão: Liderança
-
-/ranking_farm
-  → Ranking semanal de farm (Top 10).
-  → Permissão: Todos
-
-/ver_meta [membro]
-  → Verifica especificamente se um membro bateu a meta de farm.
-  → Permissão: Todos
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🔨 MODERAÇÃO & REGISTRO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-/limpar [quantidade]
-  → Apaga mensagens do canal atual.
-  → Permissão: Liderança
-
-/add_membro [usuario]
-  → Dá o cargo oficial de membro e envia as boas-vindas.
-  → Permissão: Liderança
-
-/setup_registro
-  → Envia o painel para novos membros (Recrutado/Visitante).
-  → Permissão: Liderança
-
-/perfil_membro [membro]
-  → Cartão completo: ID, Farm, Metas e Punições.
-  → Permissão: Todos
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📅 OUTROS UTILITÁRIOS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-/aviso [mensagem]
-  → Envia um aviso formatado no canal de anúncios.
-  → Permissão: Liderança
-
-/marcar_reuniao [data] [hora]
-  → Agenda reunião com sistema de presença.
-  → Permissão: Liderança
-
-/status_servidor
-  → Estatísticas em tempo real da facção.
-  → Permissão: Liderança
-
-/clonar [id_servidor]
-  → Clona estrutura de canais e cargos (Fundadores).
-  → Permissão: Fundador
-
-/config_boas_vindas
-  → Configura a mensagem automática de novos membros.
-  → Permissão: Liderança
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📁 REGISTROS AUTOMÁTICOS (LOGS)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-O bot registra automaticamente em canais específicos:
-- Edição e Exclusão de mensagens.
-- Entrada e Saída de membros (baixa automática no banco).
-- Troca de Apelidos e Cargos.
-- Movimentação em canais de voz.
-- Transcrições de Tickets fechados (em arquivo .txt).
-
-
-══════════════════════════════════════════════════════════════
-  Total de comandos: ~75
-  Versão: 2.5 — Gold Edition
-  Desenvolvido por: Facção Bot System
-══════════════════════════════════════════════════════════════
+--- 📢 OUTROS ---
+/setup_registro      - Envia o painel de registro (Recrutado/Visitante).
+/aviso               - Envia um aviso importante em embed.
+/clonar_canal        - Clona as permissões de um canal.
+/limpar              - Limpa mensagens de um canal.
