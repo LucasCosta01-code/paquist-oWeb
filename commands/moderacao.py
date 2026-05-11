@@ -31,7 +31,7 @@ class Moderacao(commands.Cog):
     async def limpar(
         self,
         interaction: discord.Interaction,
-        quantidade: int,
+        quantidade: app_commands.Range[int, 1, 9999],
     ):
         # ── Permissão ───────────────────────────────────────────────────────────
         if not checks.is_lideranca(interaction):

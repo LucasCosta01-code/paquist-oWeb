@@ -252,10 +252,10 @@ class LogsServidor(commands.Cog):
     @commands.Cog.listener()
     async def on_message_delete(self, message: discord.Message):
         """Mensagem foi apagada."""
-        if message.author.bot:
-            return  # Ignora bots
         if not message.guild:
             return  # Ignora DMs
+        
+        # Agora permitimos log de bots também, conforme solicitado
 
         e = _embed("🗑️  Mensagem Apagada", COR_SAIDA)
         e.set_thumbnail(url=message.author.display_avatar.url)

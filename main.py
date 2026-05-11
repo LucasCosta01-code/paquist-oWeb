@@ -33,7 +33,8 @@ class FaccaoBot(commands.Bot):
         super().__init__(
             command_prefix="!",  # Prefixo de fallback (não usado – apenas slash)
             intents=intents,
-            help_command=None    # Remove o !help padrão
+            help_command=None,   # Remove o !help padrão
+            max_messages=5000    # Aumenta o cache para lembrar de mais mensagens antigas
         )
 
     async def setup_hook(self):
