@@ -120,22 +120,24 @@ class Entrada(commands.Cog):
     def cog_unload(self):
         self.verificar_vinculos_global.cancel()
 
-    @tasks.loop(minutes=5)
+    @tasks.loop(minutes=4)
     async def verificar_vinculos_global(self):
         """Verifica todos os membros do servidor para ajustar o cargo de vínculo automaticamente (Real-time)."""
+        print(f"🔄 [VARREDURA] Iniciando verificação de vínculos em {datetime.now()}...")
+        
         for guild in self.bot.guilds:
             cargo_vincular = guild.get_role(CARGO_AUTO_ROLE_ID)
             cargo_vinculado = guild.get_role(CARGO_VINCULADO_ID)
+            
             if not cargo_vincular and not cargo_vinculado:
+                print(f"⚠️ [VARREDURA] Cargos não encontrados na guilda {guild.name}")
                 continue
 
-            # Garante que temos todos os membros (fetch caso o cache esteja incompleto)
-            try:
-                membros = await guild.fetch_members(limit=None).flatten()
-            except:
-                membros = guild.members
+            count_vinculados = 0
+            count_nao_vinculados = 0
 
-            for member in membros:
+            # Usa async for para iterar sobre todos os membros (mais robusto)
+            async for member in guild.fetch_members(limit=None):
                 if member.bot:
                     continue
                 
@@ -151,37 +153,39 @@ class Entrada(commands.Cog):
                     # Tenta verificar se o token ainda é válido
                     token = vinc_data["access_token"]
                     if token:
-                        async with aiohttp.ClientSession() as session:
-                            async with session.get('https://discord.com/api/users/@me', headers={'Authorization': f'Bearer {token}'}) as resp:
-                                if resp.status == 200:
-                                    is_linked = True
-                                elif resp.status == 401:
-                                    # Token expirado ou desautorizado! Remove do banco
-                                    db.remover_vinculo(str(member.id))
-                                    is_linked = False
-                                else:
-                                    # Outro erro (API fora, etc), mantém o status atual por segurança
-                                    is_linked = True
+                        try:
+                            async with aiohttp.ClientSession() as session:
+                                async with session.get('https://discord.com/api/users/@me', headers={'Authorization': f'Bearer {token}'}, timeout=5) as resp:
+                                    if resp.status == 200:
+                                        is_linked = True
+                                    elif resp.status == 401:
+                                        # Token expirado ou desautorizado! Remove do banco
+                                        db.remover_vinculo(str(member.id))
+                                        is_linked = False
+                                    else:
+                                        is_linked = True # Mantém por precaução
+                        except:
+                            is_linked = True # Erro de conexão, mantém status
                     else:
-                        # Se não tem token (vínculos antigos), considera vinculado mas não consegue checar expiração
-                        is_linked = True
+                        is_linked = True # Vínculo antigo sem token
                 
                 try:
                     if is_linked:
-                        # VINCULADO: Deve ter o cargo de Vínculo e NÃO o de Aguardando
+                        count_vinculados += 1
                         if cargo_vinculado and cargo_vinculado not in member.roles:
                             await member.add_roles(cargo_vinculado, reason="Automação: Vínculo ativo")
                         if cargo_vincular and cargo_vincular in member.roles:
                             await member.remove_roles(cargo_vincular, reason="Automação: Removendo aguardando vínculo")
                     else:
-                        # NÃO VINCULADO: Deve ter o cargo de Aguardando e NÃO o de Vínculo
+                        count_nao_vinculados += 1
                         if cargo_vinculado and cargo_vinculado in member.roles:
                             await member.remove_roles(cargo_vinculado, reason="Automação: Vínculo removido ou inexistente")
                         if cargo_vincular and cargo_vincular not in member.roles:
                             await member.add_roles(cargo_vincular, reason="Automação: Adicionando aguardando vínculo")
                 except Exception as e:
-                    print(f"❌ Erro ao ajustar cargo de {member.display_name}: {e}")
                     continue
+
+            print(f"✅ [VARREDURA] Guilda {guild.name} concluída. Vinculados: {count_vinculados} | Não Vinculados: {count_nao_vinculados}")
 
     @app_commands.command(name="varredura_vinculos", description="🔍 Força uma verificação de vínculo em todos os membros agora.")
     async def varredura_vinculos(self, interaction: discord.Interaction):
