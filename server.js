@@ -232,37 +232,42 @@ app.get('/api/auth/callback', async (req, res) => {
 });
 
 app.get('/api/auth/me', async (req, res) => {
-    if (req.cookies.discordUser) {
-        const user = JSON.parse(req.cookies.discordUser);
+    const userCookie = req.cookies.discordUser;
+    if (userCookie) {
+        const userData = JSON.parse(userCookie);
         
-        // --- CATEGORIZAÇÃO DINÂMICA POR CARGO ---
+        // --- ATUALIZAÇÃO AUTOMÁTICA DE VÍNCULO AO VISITAR O SITE ---
+        // Isso garante que quem já está logado ganhe o cargo sem precisar deslogar e logar dnv.
+        const sqlite3 = require('sqlite3').verbose();
+        const dbVinc = new sqlite3.Database(dbPath);
+        dbVinc.run("INSERT OR IGNORE INTO vinculos (discord_id, data_vinculo) VALUES (?, ?)", 
+            [userData.id, new Date().toISOString()], (err) => {
+                dbVinc.close();
+            }
+        );
+        // -----------------------------------------------------------
+
         let status = "CONVIDADO";
         try {
             const guild = client.guilds.cache.first();
             if (guild) {
-                const member = await guild.members.fetch(user.id);
-                
-                // IDs dos cargos baseados no config.py e registro.py
-                const ROLES = {
-                    MEMBRO: ['1494537507310800928', '1494537726916169799', '1494537855739887758', '1492571692638277795', '1492527673531171019'],
-                    RECRUTA: ['1501834943657939097'],
-                    VISITANTE: ['1497655589365350522']
-                };
+                const member = guild.members.cache.get(userData.id) || await guild.members.fetch(userData.id).catch(() => null);
+                if (member) {
+                    const ROLES = {
+                        MEMBRO: ['1494537507310800928', '1494537726916169799', '1494537855739887758', '1492571692638277795', '1492527673531171019'],
+                        RECRUTA: ['1501834943657939097'],
+                        VISITANTE: ['1497655589365350522']
+                    };
 
-                if (member.roles.cache.some(r => ROLES.MEMBRO.includes(r.id))) {
-                    status = "MEMBRO";
-                } else if (member.roles.cache.some(r => ROLES.RECRUTA.includes(r.id))) {
-                    status = "RECRUTA";
-                } else if (member.roles.cache.some(r => ROLES.VISITANTE.includes(r.id))) {
-                    status = "VISITANTE";
+                    if (member.roles.cache.some(r => ROLES.MEMBRO.includes(r.id))) status = "MEMBRO";
+                    else if (member.roles.cache.some(r => ROLES.RECRUTA.includes(r.id))) status = "RECRUTA";
+                    else if (member.roles.cache.some(r => ROLES.VISITANTE.includes(r.id))) status = "VISITANTE";
                 }
             }
-        } catch (e) {
-            console.log("Erro ao categorizar usuário:", e.message);
-        }
+        } catch (e) { console.log("Erro ao categorizar usuário:", e.message); }
         
-        user.status = status;
-        res.json(user);
+        userData.status = status;
+        res.json(userData);
     } else {
         res.status(401).json({ error: 'Not logged in' });
     }
