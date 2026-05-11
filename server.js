@@ -60,7 +60,17 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static(__dirname));
+// --- MIDDLEWARE PARA FORÇAR HTTPS (SSL) ---
+app.use((req, res, next) => {
+    // No Railway e Heroku, o protocolo original vem no header 'x-forwarded-proto'
+    const protocol = req.headers['x-forwarded-proto'];
+    if (protocol && protocol !== 'https') {
+        return res.redirect(`https://${req.headers.host}${req.url}`);
+    }
+    next();
+});
+
+app.use(express.static(path.join(__dirname)));
 
 // API Endpoints
 app.get('/api/gallery', (req, res) => res.json(getDB().gallery));
