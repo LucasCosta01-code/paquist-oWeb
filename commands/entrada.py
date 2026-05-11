@@ -14,15 +14,9 @@ class EntradaView(discord.ui.View):
         self.bot = bot
 
     async def check_link(self, interaction: discord.Interaction):
-        """Verifica se o usuário está vinculado no banco de dados (Site ou Faction Member)."""
-        # Verifica primeiro se vinculou no site (OAuth2)
+        """Verifica se o usuário está vinculado no banco de dados exclusivamente pelo Site (OAuth2)."""
         vinc = db.get_vinculo(str(interaction.user.id))
-        if vinc:
-            return True
-            
-        # Fallback: verifica se é membro registrado na facção
-        membro = db.get_membro(str(interaction.user.id))
-        return membro is not None
+        return vinc is not None
 
     @discord.ui.button(
         label="Sou Visitante", 
@@ -148,8 +142,8 @@ class Entrada(commands.Cog):
                 if any(role.id in [1494537507310800928, 1494537726916169799] for role in member.roles):
                     continue
 
-                # Verifica vínculo no site (OAuth2) ou na facção (Registro manual)
-                is_linked = (db.get_vinculo(str(member.id)) is not None) or (db.get_membro(str(member.id)) is not None)
+                # Verifica vínculo EXCLUSIVAMENTE no site (Discord API OAuth2)
+                is_linked = db.get_vinculo(str(member.id)) is not None
                 
                 try:
                     if is_linked:
