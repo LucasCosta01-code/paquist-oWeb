@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
+from datetime import datetime, timezone
 import database as db
 from config import (
     COR_PRINCIPAL, COR_SUCESSO, COR_ERRO, 
@@ -31,19 +32,27 @@ class EntradaView(discord.ui.View):
         if not cargo_visitante:
             return await interaction.response.send_message("❌ Erro: Cargo de Visitante não encontrado.", ephemeral=True)
 
+        is_linked = await self.check_link(interaction)
+        
+        # Adiciona cargo de visitante
         await member.add_roles(cargo_visitante, reason="Selecionou cargo de Visitante")
         
-        # Se estiver vinculado, remove o cargo de 'vincular'
-        is_linked = await self.check_link(interaction)
-        msg = "✅ Você agora tem o cargo de **Visitante**!"
+        embed = discord.Embed(
+            title="👤  Acesso como Visitante",
+            description=f"{'─' * 40}\n\n✅ Você agora tem o cargo de **Visitante**!",
+            color=COR_SUCESSO
+        )
         
-        if is_linked and cargo_vincular and cargo_vincular in member.roles:
-            await member.remove_roles(cargo_vincular, reason="Usuário vinculado selecionou cargo")
-            msg += "\n\n✨ Detectamos que você está vinculado! O cargo de 'Aguardando Vínculo' foi removido."
-        elif not is_linked:
-            msg += "\n\n⚠️ **Atenção:** Você ainda não vinculou seu Discord no site. Continue com o cargo de 'Aguardando Vínculo' até realizar o procedimento."
+        if is_linked:
+            if cargo_vincular and cargo_vincular in member.roles:
+                await member.remove_roles(cargo_vincular, reason="Membro vinculado acessou como visitante")
+            embed.add_field(name="✨ Status de Vínculo", value="Detectamos que você está **Vinculado**! O cargo de espera foi removido.", inline=False)
+        else:
+            embed.add_field(name="⚠️ Status de Vínculo", value="Você ainda **não vinculou** seu Discord no site. Por segurança, você manterá o cargo de 'Aguardando Vínculo' até realizar o procedimento.", inline=False)
 
-        await interaction.response.send_message(msg, ephemeral=True)
+        embed.set_footer(text="⚔️ Paquistão Web • Sistema de Acesso")
+        embed.timestamp = datetime.now(timezone.utc)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @discord.ui.button(
         label="Quero Recrutamento", 
@@ -63,24 +72,39 @@ class EntradaView(discord.ui.View):
         
         if not is_linked:
             embed = discord.Embed(
-                title="🚫 Vínculo Obrigatório",
+                title="🚫  Vínculo Obrigatório",
                 description=(
+                    f"{'─' * 40}\n\n"
                     "Para fazer o **Recrutamento**, você precisa primeiro vincular seu Discord no nosso site.\n\n"
-                    "1️⃣ Acesse o site da Paquistão Web.\n"
+                    "1️⃣ Acesse o site da **Paquistão Web**.\n"
                     "2️⃣ Faça login com seu Discord.\n"
-                    "3️⃣ Após vincular, tente clicar aqui novamente."
+                    "3️⃣ Após vincular, clique aqui novamente.\n\n"
+                    "⚠️ *Sem o vínculo, você não pode ser recrutado!*"
                 ),
                 color=COR_ERRO
             )
+            embed.set_footer(text="⚔️ Paquistão Web • Bloqueio de Segurança")
             return await interaction.response.send_message(embed=embed, ephemeral=True)
 
         # Se chegou aqui, está vinculado
-        await member.add_roles(cargo_recrutamento, reason="Selecionou cargo de Recrutamento")
+        await member.add_roles(cargo_recrutamento, reason="Selecionou cargo de Recrutamento (Vinculado)")
         
         if cargo_vincular and cargo_vincular in member.roles:
-            await member.remove_roles(cargo_vincular, reason="Usuário vinculado selecionou recrutamento")
+            await member.remove_roles(cargo_vincular, reason="Membro vinculado acessou recrutamento")
 
-        await interaction.response.send_message("✅ Você agora tem o cargo de **Recrutamento**! Aguarde um responsável.", ephemeral=True)
+        embed = discord.Embed(
+            title="⚔️  Iniciando Recrutamento",
+            description=(
+                f"{'─' * 40}\n\n"
+                "✅ **Vínculo Detectado!**\n"
+                "Você agora tem o cargo de **Recrutamento**.\n\n"
+                "Aguarde em uma das salas de espera para que um responsável realize sua entrevista."
+            ),
+            color=COR_SUCESSO
+        )
+        embed.set_footer(text="⚔️ Paquistão Web • Sistema de Entrada")
+        embed.timestamp = datetime.now(timezone.utc)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
 class Entrada(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -89,6 +113,48 @@ class Entrada(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.bot.add_view(EntradaView(self.bot))
+        if not self.verificar_vinculos_global.is_running():
+            self.verificar_vinculos_global.start()
+
+    def cog_unload(self):
+        self.verificar_vinculos_global.cancel()
+
+    @tasks.loop(minutes=5)
+    async def verificar_vinculos_global(self):
+        """Verifica todos os membros do servidor para ajustar o cargo de vínculo automaticamente (Real-time)."""
+        for guild in self.bot.guilds:
+            cargo_vincular = guild.get_role(CARGO_AUTO_ROLE_ID)
+            if not cargo_vincular:
+                continue
+
+            for member in guild.members:
+                if member.bot:
+                    continue
+                
+                # Ignora cargos de liderança
+                if any(role.id in [1494537507310800928, 1494537726916169799] for role in member.roles):
+                    continue
+
+                is_linked = db.get_membro(str(member.id)) is not None
+                
+                try:
+                    if is_linked:
+                        if cargo_vincular in member.roles:
+                            await member.remove_roles(cargo_vincular, reason="Varredura: Membro vinculado")
+                    else:
+                        if cargo_vincular not in member.roles:
+                            await member.add_roles(cargo_vincular, reason="Varredura: Membro não vinculado")
+                except Exception:
+                    continue
+
+    @app_commands.command(name="varredura_vinculos", description="🔍 Força uma verificação de vínculo em todos os membros agora.")
+    async def varredura_vinculos(self, interaction: discord.Interaction):
+        if not interaction.user.guild_permissions.administrator:
+            return await interaction.response.send_message("Apenas administradores podem usar este comando.", ephemeral=True)
+
+        await interaction.response.send_message("🔍 Iniciando varredura de vínculos...", ephemeral=True)
+        await self.verificar_vinculos_global()
+        await interaction.followup.send("✅ Varredura concluída!", ephemeral=True)
 
     @app_commands.command(name="painel_entrada", description="Envia o painel de seleção de cargos para novos membros.")
     async def painel_entrada(self, interaction: discord.Interaction):
@@ -99,20 +165,19 @@ class Entrada(commands.Cog):
             title="⚔️  BEM-VINDO À TROPA PAQUISTÃO",
             description=(
                 f"{'─' * 42}\n\n"
-                "Para prosseguir, selecione uma das opções abaixo:\n\n"
+                "Para prosseguir e ter acesso aos canais, selecione sua opção:\n\n"
                 "👤 **Sou Visitante**\n"
-                "Escolha esta opção se você veio apenas conhecer o servidor.\n\n"
+                "Acesso básico para conhecer o servidor.\n\n"
                 "⚔️ **Quero Recrutamento**\n"
-                "Escolha esta opção se deseja entrar para a facção.\n"
-                "*Obs: Requer vínculo obrigatório com o site.*\n\n"
+                "Acesso para candidatos à facção.\n"
+                "*(Requer vínculo obrigatório com o site)*\n\n"
                 f"{'─' * 42}\n"
-                "⚠️ **Atenção:** Caso não esteja vinculado, você manterá o cargo de 'Aguardando Vínculo'."
+                "⚠️ **Atenção:** Se você não vincular seu Discord no site, manterá o cargo de 'Aguardando Vínculo' por segurança."
             ),
             color=COR_PRINCIPAL
         )
         embed.set_footer(text="⚔️ Paquistão Web • Sistema de Entrada")
-        
-        await interaction.response.send_message("Enviando painel...", ephemeral=True)
+        await interaction.response.send_message("Painel enviado!", ephemeral=True)
         await interaction.channel.send(embed=embed, view=EntradaView(self.bot))
 
 async def setup(bot: commands.Bot):

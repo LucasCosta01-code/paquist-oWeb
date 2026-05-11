@@ -33,6 +33,7 @@ Registra TUDO que acontece no servidor em tempo real:
 import discord
 from discord.ext import commands
 from datetime import datetime, timezone
+import database as db
 
 from config import LOG_CANAL_SERVIDOR_ID, CARGO_AUTO_ROLE_ID
 
@@ -96,14 +97,20 @@ class LogsServidor(commands.Cog):
         e.add_field(name="📅 Conta criada",   value=conta_criada,                        inline=True)
         e.add_field(name="👥 Total membros",  value=str(member.guild.member_count),       inline=True)
 
-        # Adiciona o cargo automático
+        # Adiciona o cargo automático apenas se NÃO estiver vinculado no site
         try:
+            is_linked = db.get_membro(str(member.id)) is not None
             cargo = member.guild.get_role(CARGO_AUTO_ROLE_ID)
-            if cargo:
-                await member.add_roles(cargo, reason="Auto-Role automático ao entrar")
+            
+            if is_linked:
+                # Se já está vinculado, avisamos no log e não damos o cargo de espera
+                e.add_field(name="✨ Status", value="Membro já está **Vinculado** no site! Cargo de espera ignorado.", inline=True)
+            elif cargo:
+                # Se não está vinculado, dá o cargo de espera
+                await member.add_roles(cargo, reason="Auto-Role automático ao entrar (Não vinculado)")
                 e.add_field(name="🏷️ Cargo automático", value=f"{cargo.mention}", inline=True)
-        except Exception:
-            pass
+        except Exception as err:
+            print(f"[ERRO] Falha no auto-role ao entrar: {err}")
 
         await self._enviar(e)
 
