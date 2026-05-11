@@ -110,23 +110,36 @@ class LogsServidor(commands.Cog):
     async def on_member_update(self, before: discord.Member, after: discord.Member):
         """Nickname, cargos ou outros dados do membro mudaram."""
 
-        # ── Cargo adicionado ────────────────────────────────────────────────────
+        # ── Cargo adicionado/removido ───────────────────────────────────────────
         cargos_add = [r for r in after.roles  if r not in before.roles]
         cargos_rem = [r for r in before.roles if r not in after.roles]
 
-        for cargo in cargos_add:
-            e = _embed("🟢  Cargo Adicionado", COR_CARGO)
-            e.set_thumbnail(url=after.display_avatar.url)
-            e.add_field(name="👤 Usuário", value=f"{after.mention} (`{after.id}`)", inline=True)
-            e.add_field(name="➕ Cargo",   value=cargo.mention,                     inline=True)
-            await self._enviar(e)
+        if cargos_add or cargos_rem:
+            responsavel = "Desconhecido"
+            try:
+                # Busca quem alterou os cargos
+                async for entry in after.guild.audit_logs(limit=5, action=discord.AuditLogAction.member_role_update):
+                    if entry.target.id == after.id:
+                        responsavel = f"{entry.user.mention} (`{entry.user.id}`)"
+                        break
+            except Exception:
+                pass
 
-        for cargo in cargos_rem:
-            e = _embed("🔴  Cargo Removido", COR_CARGO)
-            e.set_thumbnail(url=after.display_avatar.url)
-            e.add_field(name="👤 Usuário", value=f"{after.mention} (`{after.id}`)", inline=True)
-            e.add_field(name="➖ Cargo",   value=cargo.mention,                     inline=True)
-            await self._enviar(e)
+            for cargo in cargos_add:
+                e = _embed("🟢  Cargo Adicionado", COR_CARGO)
+                e.set_thumbnail(url=after.display_avatar.url)
+                e.add_field(name="👤 Usuário",     value=f"{after.mention} (`{after.id}`)", inline=True)
+                e.add_field(name="➕ Cargo",       value=cargo.mention,                     inline=True)
+                e.add_field(name="👮 Responsável", value=responsavel,                       inline=False)
+                await self._enviar(e)
+
+            for cargo in cargos_rem:
+                e = _embed("🔴  Cargo Removido", COR_CARGO)
+                e.set_thumbnail(url=after.display_avatar.url)
+                e.add_field(name="👤 Usuário",     value=f"{after.mention} (`{after.id}`)", inline=True)
+                e.add_field(name="➖ Cargo",       value=cargo.mention,                     inline=True)
+                e.add_field(name="👮 Responsável", value=responsavel,                       inline=False)
+                await self._enviar(e)
 
         # ── Nickname alterado ───────────────────────────────────────────────────
         if before.nick != after.nick:
@@ -272,8 +285,19 @@ class LogsServidor(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
         """Canal apagado."""
+        responsavel = "Desconhecido"
+        try:
+            # Busca nos logs de auditoria quem apagou
+            async for entry in channel.guild.audit_logs(limit=5, action=discord.AuditLogAction.channel_delete):
+                if entry.target.id == channel.id:
+                    responsavel = f"{entry.user.mention} (`{entry.user.id}`)"
+                    break
+        except Exception:
+            pass
+
         e = _embed("🗑️  Canal Apagado", COR_SAIDA)
         e.add_field(name="📌 Nome", value=f"`#{channel.name}` (`{channel.id}`)", inline=True)
+        e.add_field(name="👮 Responsável", value=responsavel, inline=True)
         await self._enviar(e)
 
     @commands.Cog.listener()
@@ -315,9 +339,19 @@ class LogsServidor(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role: discord.Role):
         """Cargo apagado."""
+        responsavel = "Desconhecido"
+        try:
+            async for entry in role.guild.audit_logs(limit=5, action=discord.AuditLogAction.role_delete):
+                if entry.target.id == role.id:
+                    responsavel = f"{entry.user.mention} (`{entry.user.id}`)"
+                    break
+        except Exception:
+            pass
+
         e = _embed("🗑️  Cargo Apagado", COR_SAIDA)
         e.add_field(name="🏷️ Nome", value=f"`{role.name}` (`{role.id}`)", inline=True)
         e.add_field(name="🎨 Cor",  value=str(role.color),                 inline=True)
+        e.add_field(name="👮 Responsável", value=responsavel,            inline=False)
         await self._enviar(e)
 
     @commands.Cog.listener()

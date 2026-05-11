@@ -12,7 +12,7 @@ from datetime import datetime
 
 import checks
 import utils
-from config import CARGO_FUNDADOR_ID, COR_ERRO, COR_SUCESSO
+from config import CARGO_FUNDADOR_ID, COR_ERRO, COR_SUCESSO, LOG_CANAL_SERVIDOR_ID
 
 # Regex aprimorada para detectar links mesmo sem http:// ou www.
 # Captura domínios comuns e subdomínios (ex: discordapp.com, discord.gg, site.com.br)
@@ -53,6 +53,23 @@ class AntiLink(commands.Cog):
                         color=COR_ERRO
                     )
                     aviso = await message.channel.send(embed=embed)
+                    
+                    # Log detalhado no canal de logs do servidor
+                    if LOG_CANAL_SERVIDOR_ID:
+                        canal_log = self.bot.get_channel(LOG_CANAL_SERVIDOR_ID)
+                        if canal_log:
+                            log_embed = discord.Embed(
+                                title="🛡️ Link Bloqueado",
+                                description=f"Uma mensagem contendo um link foi removida automaticamente.",
+                                color=0xE67E22, # Laranja
+                                timestamp=datetime.utcnow()
+                            )
+                            log_embed.add_field(name="👤 Autor",   value=f"{message.author.mention} (`{message.author.id}`)", inline=True)
+                            log_embed.add_field(name="📌 Canal",   value=message.channel.mention,                             inline=True)
+                            log_embed.add_field(name="💬 Conteúdo", value=f"```\n{message.content}\n```",                    inline=False)
+                            log_embed.set_footer(text="Sistema de Anti-Link")
+                            await canal_log.send(embed=log_embed)
+
                     await asyncio.sleep(5)
                     await aviso.delete()
                     
