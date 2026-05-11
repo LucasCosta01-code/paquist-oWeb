@@ -23,10 +23,10 @@ class Moderacao(commands.Cog):
     # ─── /limpar ───────────────────────────────────────────────────────────────
     @app_commands.command(
         name="limpar",
-        description="🧹 Apaga mensagens do canal. [Apenas Liderança]"
+        description="🧹 Apaga mensagens do canal (Sem limites). [Apenas Liderança]"
     )
     @app_commands.describe(
-        quantidade="Número de mensagens a apagar"
+        quantidade="Número de mensagens a apagar (ex: 10, 100, 1000, 5000...)"
     )
     async def limpar(
         self,

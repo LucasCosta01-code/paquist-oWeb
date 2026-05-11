@@ -54,10 +54,13 @@ def _ts() -> str:
 
 
 def _embed(titulo: str, cor: int, descricao: str = "") -> discord.Embed:
-    """Cria um embed de log padronizado."""
-    e = discord.Embed(title=titulo, description=descricao, color=cor)
+    """Cria um embed de log padronizado e estético."""
+    # Adiciona uma linha separadora se houver descrição
+    corpo = f"{descricao}\n\n{'─' * 42}" if descricao else f"{'─' * 42}"
+    
+    e = discord.Embed(title=titulo, description=corpo, color=cor)
     e.timestamp = datetime.now(timezone.utc)
-    e.set_footer(text="📋 Log do Servidor")
+    e.set_footer(text="📋 Sistema de Monitoramento • Paquistão Web")
     return e
 
 
@@ -97,8 +100,28 @@ class LogsServidor(commands.Cog):
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
         """Membro saiu ou foi kickado do servidor."""
+        responsavel = None
+        motivo = None
+        try:
+            # Verifica se foi um kick recente
+            async for entry in member.guild.audit_logs(limit=5, action=discord.AuditLogAction.kick):
+                if entry.target.id == member.id:
+                    # Verifica se o kick aconteceu nos últimos 10 segundos
+                    if (discord.utils.utcnow() - entry.created_at).total_seconds() < 10:
+                        responsavel = entry.user
+                        motivo = entry.reason
+                        break
+        except Exception:
+            pass
+
+        if responsavel:
+            e = _embed("👢  Membro Expulso (Kick)", COR_SAIDA)
+            e.add_field(name="👮 Responsável", value=f"{responsavel.mention} (`{responsavel.id}`)", inline=True)
+            e.add_field(name="📝 Motivo",      value=motivo or "Não especificado",                inline=False)
+        else:
+            e = _embed("📤  Membro Saiu", COR_SAIDA)
+        
         cargos = [r.mention for r in member.roles if r.name != "@everyone"]
-        e = _embed("📤  Membro Saiu", COR_SAIDA)
         e.set_thumbnail(url=member.display_avatar.url)
         e.add_field(name="👤 Usuário",      value=f"{member.mention} (`{member.id}`)",               inline=False)
         e.add_field(name="🏷️ Nome",         value=str(member),                                        inline=True)
@@ -186,19 +209,40 @@ class LogsServidor(commands.Cog):
     @commands.Cog.listener()
     async def on_member_ban(self, guild: discord.Guild, user: discord.User):
         """Usuário foi banido."""
+        responsavel = "Desconhecido"
+        motivo = "Não especificado"
+        try:
+            async for entry in guild.audit_logs(limit=5, action=discord.AuditLogAction.ban):
+                if entry.target.id == user.id:
+                    responsavel = f"{entry.user.mention} (`{entry.user.id}`)"
+                    motivo = entry.reason or "Não especificado"
+                    break
+        except Exception:
+            pass
+
         e = _embed("🔨  Usuário Banido", COR_BAN)
         e.set_thumbnail(url=user.display_avatar.url)
-        e.add_field(name="👤 Usuário", value=f"{user.mention} (`{user.id}`)", inline=True)
-        e.add_field(name="🏷️ Nome",   value=str(user),                        inline=True)
+        e.add_field(name="👤 Usuário",     value=f"{user.mention} (`{user.id}`)", inline=True)
+        e.add_field(name="👮 Responsável", value=responsavel,                     inline=True)
+        e.add_field(name="📝 Motivo",      value=motivo,                          inline=False)
         await self._enviar(e)
 
     @commands.Cog.listener()
     async def on_member_unban(self, guild: discord.Guild, user: discord.User):
         """Usuário foi desbanido."""
+        responsavel = "Desconhecido"
+        try:
+            async for entry in guild.audit_logs(limit=5, action=discord.AuditLogAction.unban):
+                if entry.target.id == user.id:
+                    responsavel = f"{entry.user.mention} (`{entry.user.id}`)"
+                    break
+        except Exception:
+            pass
+
         e = _embed("✅  Usuário Desbanido", COR_ENTRADA)
         e.set_thumbnail(url=user.display_avatar.url)
-        e.add_field(name="👤 Usuário", value=f"{user.mention} (`{user.id}`)", inline=True)
-        e.add_field(name="🏷️ Nome",   value=str(user),                        inline=True)
+        e.add_field(name="👤 Usuário",     value=f"{user.mention} (`{user.id}`)", inline=True)
+        e.add_field(name="👮 Responsável", value=responsavel,                     inline=True)
         await self._enviar(e)
 
     # ══════════════════════════════════════════════════════════════════════════════
@@ -219,10 +263,10 @@ class LogsServidor(commands.Cog):
         e.add_field(name="📌 Canal",   value=message.channel.mention,                             inline=True)
 
         # Conteúdo (pode ser vazio se for embed/arquivo)
-        conteudo = message.content or "*[sem texto — pode ser arquivo ou embed]*"
-        if len(conteudo) > 1000:
-            conteudo = conteudo[:1000] + "…"
-        e.add_field(name="💬 Conteúdo", value=conteudo, inline=False)
+        conteudo = message.content or "*[Mensagem sem texto — pode ser apenas arquivo, imagem ou embed]*"
+        if len(conteudo) > 1020:
+            conteudo = conteudo[:1020] + "..."
+        e.add_field(name="💬 Conteúdo Apagado", value=f"```\n{conteudo}\n```", inline=False)
 
         # Anexos
         if message.attachments:
@@ -258,15 +302,16 @@ class LogsServidor(commands.Cog):
         e.add_field(name="📌 Canal",   value=before.channel.mention,                            inline=True)
         e.add_field(name="🔗 Link",    value=f"[Ir para mensagem]({after.jump_url})",           inline=True)
 
-        antes = before.content or "*vazio*"
-        depois = after.content or "*vazio*"
-        if len(antes) > 500:
-            antes = antes[:500] + "…"
-        if len(depois) > 500:
-            depois = depois[:500] + "…"
+        antes = before.content or "*[Vazio ou apenas mídia]*"
+        depois = after.content or "*[Vazio ou apenas mídia]*"
+        
+        if len(antes) > 1020:
+            antes = antes[:1020] + "..."
+        if len(depois) > 1020:
+            depois = depois[:1020] + "..."
 
-        e.add_field(name="📝 Antes",  value=antes,  inline=False)
-        e.add_field(name="📝 Depois", value=depois, inline=False)
+        e.add_field(name="📝 Antes",  value=f"```\n{antes}\n```",  inline=False)
+        e.add_field(name="📝 Depois", value=f"```\n{depois}\n```", inline=False)
         await self._enviar(e)
 
     # ══════════════════════════════════════════════════════════════════════════════
@@ -276,10 +321,20 @@ class LogsServidor(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
         """Canal criado."""
+        responsavel = "Desconhecido"
+        try:
+            async for entry in channel.guild.audit_logs(limit=5, action=discord.AuditLogAction.channel_create):
+                if entry.target.id == channel.id:
+                    responsavel = f"{entry.user.mention} (`{entry.user.id}`)"
+                    break
+        except Exception:
+            pass
+
         tipo = type(channel).__name__.replace("Channel", "").replace("Thread", "Thread")
         e = _embed("📁  Canal Criado", COR_CANAL)
-        e.add_field(name="📌 Canal", value=f"{channel.mention} (`{channel.id}`)", inline=True)
-        e.add_field(name="🔎 Tipo",  value=tipo,                                  inline=True)
+        e.add_field(name="📌 Canal",       value=f"{channel.mention} (`{channel.id}`)", inline=True)
+        e.add_field(name="🔎 Tipo",        value=tipo,                                  inline=True)
+        e.add_field(name="👮 Responsável", value=responsavel,                         inline=False)
         await self._enviar(e)
 
     @commands.Cog.listener()
@@ -319,9 +374,19 @@ class LogsServidor(commands.Cog):
         if not mudancas:
             return
 
+        responsavel = "Desconhecido"
+        try:
+            async for entry in after.guild.audit_logs(limit=5, action=discord.AuditLogAction.channel_update):
+                if entry.target.id == after.id:
+                    responsavel = f"{entry.user.mention} (`{entry.user.id}`)"
+                    break
+        except Exception:
+            pass
+
         e = _embed("🔧  Canal Editado", COR_CANAL)
-        e.add_field(name="📌 Canal",    value=after.mention,          inline=True)
-        e.add_field(name="📋 Mudanças", value="\n".join(mudancas),    inline=False)
+        e.add_field(name="📌 Canal",       value=after.mention,          inline=True)
+        e.add_field(name="👮 Responsável", value=responsavel,            inline=True)
+        e.add_field(name="📋 Mudanças",    value="\n".join(mudancas),    inline=False)
         await self._enviar(e)
 
     # ══════════════════════════════════════════════════════════════════════════════
@@ -331,9 +396,19 @@ class LogsServidor(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_role_create(self, role: discord.Role):
         """Cargo criado."""
+        responsavel = "Desconhecido"
+        try:
+            async for entry in role.guild.audit_logs(limit=5, action=discord.AuditLogAction.role_create):
+                if entry.target.id == role.id:
+                    responsavel = f"{entry.user.mention} (`{entry.user.id}`)"
+                    break
+        except Exception:
+            pass
+
         e = _embed("🎭  Cargo Criado", COR_CARGO)
-        e.add_field(name="🏷️ Cargo", value=f"{role.mention} (`{role.id}`)", inline=True)
-        e.add_field(name="🎨 Cor",   value=str(role.color),                 inline=True)
+        e.add_field(name="🏷️ Cargo",       value=f"{role.mention} (`{role.id}`)", inline=True)
+        e.add_field(name="🎨 Cor",         value=str(role.color),                 inline=True)
+        e.add_field(name="👮 Responsável", value=responsavel,                     inline=False)
         await self._enviar(e)
 
     @commands.Cog.listener()
@@ -372,9 +447,19 @@ class LogsServidor(commands.Cog):
         if not mudancas:
             return
 
+        responsavel = "Desconhecido"
+        try:
+            async for entry in after.guild.audit_logs(limit=5, action=discord.AuditLogAction.role_update):
+                if entry.target.id == after.id:
+                    responsavel = f"{entry.user.mention} (`{entry.user.id}`)"
+                    break
+        except Exception:
+            pass
+
         e = _embed("✏️  Cargo Editado", COR_CARGO)
-        e.add_field(name="🏷️ Cargo",    value=after.mention,         inline=True)
-        e.add_field(name="📋 Mudanças", value="\n".join(mudancas),   inline=False)
+        e.add_field(name="🏷️ Cargo",       value=after.mention,         inline=True)
+        e.add_field(name="👮 Responsável", value=responsavel,           inline=True)
+        e.add_field(name="📋 Mudanças",    value="\n".join(mudancas),   inline=False)
         await self._enviar(e)
 
     # ══════════════════════════════════════════════════════════════════════════════

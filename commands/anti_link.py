@@ -59,15 +59,15 @@ class AntiLink(commands.Cog):
                         canal_log = self.bot.get_channel(LOG_CANAL_SERVIDOR_ID)
                         if canal_log:
                             log_embed = discord.Embed(
-                                title="🛡️ Link Bloqueado",
-                                description=f"Uma mensagem contendo um link foi removida automaticamente.",
+                                title="🛡️  Link Bloqueado",
+                                description=f"Uma mensagem contendo um link foi removida automaticamente.\n\n{'─' * 42}",
                                 color=0xE67E22, # Laranja
                                 timestamp=datetime.utcnow()
                             )
                             log_embed.add_field(name="👤 Autor",   value=f"{message.author.mention} (`{message.author.id}`)", inline=True)
                             log_embed.add_field(name="📌 Canal",   value=message.channel.mention,                             inline=True)
                             log_embed.add_field(name="💬 Conteúdo", value=f"```\n{message.content}\n```",                    inline=False)
-                            log_embed.set_footer(text="Sistema de Anti-Link")
+                            log_embed.set_footer(text="🛡️ Sistema Anti-Link • Paquistão Web")
                             await canal_log.send(embed=log_embed)
 
                     await asyncio.sleep(5)
