@@ -1,4 +1,37 @@
+# Dependências
 node_modules/
+
+# Variáveis de ambiente e credenciais
 .env
+.env.*
+!.env.example
+
+# Bancos e dados locais
 database.json
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Logs e cobertura
+*.log
+coverage/
+htmlcov/
+
+# Builds e pacotes
+dist/
+build/
+*.zip
+
+# Sistema e editores
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
